@@ -1,6 +1,5 @@
 import type { Hello } from "../interfaces";
 import useSwr from "swr";
-import Link from "next/link";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -13,7 +12,7 @@ export default function Index() {
 
   return (
     <div>
-      <p>{data.message}</p>
+      <p className="text-2xl text-red-600">{data.message}</p>
     </div>
   );
 }
