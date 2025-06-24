@@ -17,7 +17,18 @@ export const tableNames = [
   'municipio'
 ];
 
-export const tables = [
+interface ITabela {
+  nome: string;
+  tabela: string;
+  obj: any; // Prisma model object
+  descricao: string;
+  colunas: Array<{
+    nome: string;
+    tipo: string; // e.g., 'string', 'number'
+    descricao: string;
+  }>;
+}
+export const Tabelas: ITabela[] = [
   {
     nome: "Desmatamento por Bioma",
     tabela: "desmatamento_bioma",
