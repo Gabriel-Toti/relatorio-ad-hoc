@@ -1,4 +1,5 @@
 import {useState} from 'react';
+import {Tabelas, ITabela, IColuna} from '../../utils/tables';
 
 enum Operacao {
     Menor = "<",
@@ -9,17 +10,17 @@ enum Operacao {
     Igual = "=="
 }
 
+interface ICampo {
+    tabela: ITabela,
+    campo: IColuna
+}
 interface IFiltro {
-    tabela: string,
-    campo: string,
+    tabela: ITabela,
+    campo: ICampo,
     operacao: Operacao | string, 
     valor: string,
 }
 
-interface ICampo {
-    tabela: string,
-    campo: string
-}
 
 const SelectArray = ({
     array,
@@ -43,7 +44,13 @@ const SelectArray = ({
     </select>
 );
 
-function SelectCampos({campos, onChangeSelect, onChangeGroup}) {
+function SelectCampos({campos, camposSelecionados, camposAgrupados, onChangeSelect, onChangeGroup}) {
+    console.log("campos", camposSelecionados);
+    campos.map(campo => {
+        if (!camposSelecionados.includes(campo)) {
+            console.log("n tem campo", campo);
+        } 
+    });
     return (<table className={"table-form mx-5"}>
                 <thead>
                     <tr>
@@ -55,18 +62,28 @@ function SelectCampos({campos, onChangeSelect, onChangeGroup}) {
                 <tbody>
                     {campos.map((campo, index) => (
                         <tr key={index}>
-                            <td className="table-form mx-5">{campo}</td>
+                            <td className="table-form mx-5">{campo.campo.descricao}</td>
                             <td className="table-form mx-5">
                                 <input
                                     type="checkbox"
-                                    onChange={(e) => onChangeSelect(campo,e)}
+                                    onChange={(e) => onChangeSelect(campo, e)}
+                                    checked={camposSelecionados.some(
+                                        (element) =>
+                                            element.tabela.nome === campo.tabela.nome &&
+                                            element.campo.nome === campo.campo.nome
+                                    )}
                                 />
                             </td>
                             <td className="table-form mx-5">
                                 <input
                                     type="checkbox"
-                                    onChange={(e) => onChangeGroup(campo,e)}
-                                />
+                                    onChange={(e) => onChangeGroup(campo, e)}
+                                    checked={camposAgrupados.some(
+                                        (element) =>
+                                            element.tabela.nome === campo.tabela.nome &&
+                                            element.campo.nome === campo.campo.nome
+                                    )}
+                                />  
                             </td>
                         </tr>
                     ))
@@ -75,7 +92,6 @@ function SelectCampos({campos, onChangeSelect, onChangeGroup}) {
             </table>
     );
 }
-
 function SelectOrderBy({campos}) {
     return (<table>
                 <thead>
@@ -89,8 +105,8 @@ function SelectOrderBy({campos}) {
                 <tbody>
                     {campos.map((campo, index) => (
                         <tr key={index}>
-                            <td className="table-form">a</td>
-                            <td className="table-form">{campo}</td>
+                            <td className="table-form">{campo.tabela.nome}</td>
+                            <td className="table-form">{campo.campo.descricao}</td>
                             <td className="table-form">
                                 <input type="radio" name={`order`} value="asc" /> 
                                 <label> ASC</label>
@@ -107,28 +123,30 @@ function SelectOrderBy({campos}) {
 }
 
 export default function Formulario() {
-    const [tabelas, setTabelas] = useState<string[]>(["a", "b", "c"]);
-    const [camposTabela, setCamposTabela] = useState<string[]>(["campo1", "campo2", "campo3"]);
-    const [camposSelecionados, setCamposSelecionados] = useState<string[]>([]);
-    const [filtros, setFiltros] = useState<IFiltro[]>([
-        {
-            tabela: "a",
-            campo: "campo1",
-            operacao: Operacao.Igual,
-            valor: "123"
-        },
-        {
-            tabela: "b",
-            campo: "campo2",
-            operacao: Operacao.Maior,
-            valor: "50"
-        }
-    ]);
+    const [tabelas, setTabelas] = useState<ITabela[]>(Tabelas);
+    const [camposTabela, setCamposTabela] = useState<ICampo[]>([]);
+    const [camposSelecionados, setCamposSelecionados] = useState<ICampo[]>([]);
+    const [camposAgrupados, setCamposAgrupados] = useState<ICampo[]>([]);
+    const [filtros, setFiltros] = useState<IFiltro[]>([]);
     const classTable = "border border-gray-300 rounded p-2"
 
+    function handleAdicionarFiltro() {
+        if (camposSelecionados.length === 0) {
+            return;
+        }
+        setFiltros([
+            ...filtros,
+            {
+                tabela: tabelas[0],
+                campo: camposSelecionados[0],
+                operacao: Operacao.Igual,
+                valor: ""
+            }
+        ]);
+    }
     function handleDeletarFiltro(id)
     {
-
+        setFiltros(filtros.filter((filtro, index) => index !== id));
     }
     function getCamposTabela()
     {
@@ -140,7 +158,16 @@ export default function Formulario() {
             <>
                 <label>
                     Tabelas: 
-                    <SelectArray array={tabelas}/>
+                    <SelectArray 
+                        array={tabelas.map(tabela => tabela.nome)}
+                        onChange={(e) => {
+                            const tabelaSelecionada = tabelas.find(t => t.nome === e.target.value);
+                            if (tabelaSelecionada) {
+                                setCamposTabela(tabelaSelecionada.colunas.map(c => ({ tabela: tabelaSelecionada, campo: c })));
+                            }
+                        }}
+                        defaultValue={tabelas[0].nome}
+                    />
                 </label>
                 <label>Selecionar campos:</label>
                 <SelectCampos
@@ -149,12 +176,30 @@ export default function Formulario() {
                         if (e.target.checked) {
                             setCamposSelecionados([...camposSelecionados, campo]);
                         } else {
-                            setCamposSelecionados(camposSelecionados.filter(c => c !== campo));
+                            setCamposSelecionados(
+                                camposSelecionados.filter(
+                                    c =>
+                                        c.tabela.nome !== campo.tabela.nome ||
+                                        c.campo.nome !== campo.campo.nome
+                                )
+                            );
                         }
                     }}
                     onChangeGroup={(campo, e) => {
-                        // lógica para agrupar campos
+                        if (e.target.checked) {
+                            setCamposAgrupados([...camposAgrupados, campo]);
+                        } else {
+                            setCamposAgrupados(
+                                camposAgrupados.filter(
+                                    c =>
+                                        c.tabela.nome !== campo.tabela.nome ||
+                                        c.campo.nome !== campo.campo.nome
+                                )
+                            );
+                        }
                     }}
+                    camposSelecionados={camposSelecionados}
+                    camposAgrupados={camposAgrupados}
                 />
                 <label>Ordernar por campo:</label>
                 <SelectOrderBy campos={camposSelecionados} />
@@ -163,7 +208,6 @@ export default function Formulario() {
             <table>
                 <thead>
                     <tr>
-                        <th className="table-form">Tabela</th>
                         <th className="table-form">Campo</th>
                         <th className="table-form">Operação</th>
                         <th className="table-form">Valor</th>
@@ -173,27 +217,18 @@ export default function Formulario() {
                 <tbody>
                     {filtros.map((filtro, index) => (
                         <tr key={index}>
-                            <td className="table-form">
-                                <SelectArray array={tabelas} defaultValue={filtro.tabela} onChange={
-                                    (e) => {
-                                        const novaTabela = e.target.value;
-                                        setFiltros((prev) =>
-                                            prev.map((f, i) =>
-                                                i === index ? { ...f, tabela: novaTabela } : f
-                                            )
-                                        );
-                                    }
-                                }/>
-                            </td>
                             <td className="table-form text-center">
-                                <SelectArray array={camposSelecionados} defaultValue={filtro.campo} onChange={
+                                <SelectArray array={camposSelecionados.map(campo => campo.tabela.nome + ": " + campo.campo.descricao)} defaultValue={filtro.campo.campo.descricao} onChange={
                                     (e) => {
                                         const novoCampo = e.target.value;
-                                        setFiltros((prev) =>
-                                            prev.map((f, i) =>
-                                                i === index ? { ...f, campo: novoCampo } : f
-                                            )
-                                        );
+                                        const campoSelecionado = camposSelecionados.find(c =>  c.tabela.nome + ": " + c.campo.descricao === novoCampo);
+                                        if (campoSelecionado) {
+                                            setFiltros((prev) =>
+                                                prev.map((f, i) =>
+                                                    i === index ? { ...f, campo: campoSelecionado } : f
+                                                )
+                                            );
+                                        }
                                     }
                                 }/>
                             </td>
@@ -224,7 +259,9 @@ export default function Formulario() {
                         </tr>
                     ))}
                     <tr className="table-form">
-                        Adicionar
+                        <button type="button" className="table-form" onClick={handleAdicionarFiltro}>
+                            Adicionar
+                        </button>
                     </tr>
                 </tbody>
             </table>

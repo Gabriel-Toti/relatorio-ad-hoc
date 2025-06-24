@@ -1,22 +1,3 @@
-"use server"
-import { PrismaClient } from "../generated/prisma/client";
-
-const prisma = new PrismaClient();
-
-export const tableNames = [
-  'bioma',
-  'bioma_estado',
-  'bioma_municipio',
-  'caracteristica',
-  'caracteristica_bioma',
-  'caracteristica_estado',
-  'caracteristica_municipio',
-  'desmatamento_bioma',
-  'desmatamento_estado',
-  'desmatamento_municipio',
-  'estado',
-  'municipio'
-];
 
 export interface IColuna {
   nome: string;
@@ -26,7 +7,6 @@ export interface IColuna {
 export interface ITabela {
   nome: string;
   tabela: string;
-  obj: any; // Prisma model object
   descricao: string;
   colunas: Array<IColuna>;
 }
@@ -35,7 +15,6 @@ export const Tabelas: ITabela[] = [
   {
     nome: "Desmatamento por Bioma",
     tabela: "desmatamento_bioma",
-    obj: prisma.desmatamento_bioma,
     descricao: "Desmatamento por bioma no Brasil, incluindo dados de área desmatada e ano.",
     colunas: [
       { nome: "bioma", tipo: "string", descricao: "Nome do bioma" },
@@ -46,7 +25,6 @@ export const Tabelas: ITabela[] = [
   {
     nome: "Desmatamento por Estado",
     tabela: "desmatamento_estado",
-    obj: prisma.desmatamento_estado,
     descricao: "Desmatamento por estado no Brasil, incluindo dados de área desmatada e ano.",
     colunas: [
       { nome: "estado", tipo: "string", descricao: "Nome do estado" },
@@ -55,5 +33,3 @@ export const Tabelas: ITabela[] = [
     ]
   }
 ]
-
-export default prisma;
