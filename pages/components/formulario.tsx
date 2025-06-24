@@ -12,7 +12,7 @@ enum Operacao {
 interface IFiltro {
     tabela: string,
     campo: string,
-    operacao: Operacao,
+    operacao: Operacao | string, 
     valor: string,
 }
 
@@ -21,18 +21,89 @@ interface ICampo {
     campo: string
 }
 
-function SelectArray({array, onChange, defaultValue}){
-    return (<select
-                className="border border-gray-300 rounded p-2 mx-5 min-w-1/4"
-                defaultValue={defaultValue || array[0]}
-                onChange={onChange} //colocar lógica para atualizar camposTabela com base na tabela selecionada
-            >
-                {array.map((tabela, index) => (
-                    <option key={index} value={tabela}>
-                        {tabela}
-                    </option>
-                ))}
-            </select>)
+const SelectArray = ({
+    array,
+    onChange,
+    defaultValue
+}: {
+    array: string[];
+    onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+    defaultValue?: string;
+}) => (
+    <select
+        className="border border-gray-300 rounded p-2 mx-5 min-w-1/4"
+        defaultValue={defaultValue || array[0]}
+        onChange={onChange}
+    >
+        {array.map((tabela, index) => (
+            <option key={index} value={tabela}>
+                {tabela}
+            </option>
+        ))}
+    </select>
+);
+
+function SelectCampos({campos, onChangeSelect, onChangeGroup}) {
+    return (<table className={"table-form mx-5"}>
+                <thead>
+                    <tr>
+                        <th className="table-form mx-5">Campo</th>
+                        <th className="table-form mx-5">Selecionar</th>
+                        <th className="table-form mx-5">Agrupar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {campos.map((campo, index) => (
+                        <tr key={index}>
+                            <td className="table-form mx-5">{campo}</td>
+                            <td className="table-form mx-5">
+                                <input
+                                    type="checkbox"
+                                    onChange={(e) => onChangeSelect(campo,e)}
+                                />
+                            </td>
+                            <td className="table-form mx-5">
+                                <input
+                                    type="checkbox"
+                                    onChange={(e) => onChangeGroup(campo,e)}
+                                />
+                            </td>
+                        </tr>
+                    ))
+                }
+                </tbody>
+            </table>
+    );
+}
+
+function SelectOrderBy({campos}) {
+    return (<table>
+                <thead>
+                    <tr>
+                        <th className="table-form">Tabela</th>
+                        <th className="table-form">Campo</th>
+                        <th className="table-form">ASC</th>
+                        <th className="table-form">DESC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {campos.map((campo, index) => (
+                        <tr key={index}>
+                            <td className="table-form">a</td>
+                            <td className="table-form">{campo}</td>
+                            <td className="table-form">
+                                <input type="radio" name={`order`} value="asc" /> 
+                                <label> ASC</label>
+                            </td>
+                            <td className="table-form">
+                                <input type="radio" name={`order`} value="asc" /> 
+                                <label> DESC</label>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+    )
 }
 
 export default function Formulario() {
@@ -72,87 +143,37 @@ export default function Formulario() {
                     <SelectArray array={tabelas}/>
                 </label>
                 <label>Selecionar campos:</label>
-                <table className={classTable}>
-                    <thead>
-                        <tr>
-                            <th className={classTable}>Campo</th>
-                            <th className={classTable}>Selecionar</th>
-                            <th className={classTable}>Agrupar</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {camposTabela.map((campo, index) => (
-                            <tr key={index}>
-                                <td className={classTable}>{campo}</td>
-                                <td className={classTable}>
-                                    <input
-                                        type="checkbox"
-                                        onChange={() => {
-                                            setCamposSelecionados((prev) => {
-                                                if (prev.includes(campo)) {
-                                                    return prev.filter((c) => c !== campo);
-                                                } else {
-                                                    return [...prev, campo];
-                                                }
-                                            });
-                                        }}
-                                    />
-                                </td>
-                                <td className={classTable}>
-                                    <input
-                                        type="checkbox"
-                                        onChange={() => {
-                                            // Handle checkbox change if needed
-                                        }}
-                                    />
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <SelectCampos
+                    campos={camposTabela}
+                    onChangeSelect={(campo, e) => {
+                        if (e.target.checked) {
+                            setCamposSelecionados([...camposSelecionados, campo]);
+                        } else {
+                            setCamposSelecionados(camposSelecionados.filter(c => c !== campo));
+                        }
+                    }}
+                    onChangeGroup={(campo, e) => {
+                        // lógica para agrupar campos
+                    }}
+                />
                 <label>Ordernar por campo:</label>
-                <table>
-                    <thead>
-                        <tr>
-                            <th className={classTable}>Tabela</th>
-                            <th className={classTable}>Campo</th>
-                            <th className={classTable}>ASC</th>
-                            <th className={classTable}>DESC</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {camposSelecionados.map((campo, index) => (
-                            <tr key={index}>
-                                <td className={classTable}>a</td>
-                                <td className={classTable}>{campo}</td>
-                                <td className={classTable}>
-                                    <input type="radio" name={`order`} value="asc" /> 
-                                    <label> ASC</label>
-                                </td>
-                                <td className={classTable}>
-                                    <input type="radio" name={`order`} value="asc" /> 
-                                    <label> DESC</label>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <SelectOrderBy campos={camposSelecionados} />
             </>
             Filtros:
             <table>
                 <thead>
                     <tr>
-                        <th className={classTable}>Tabela</th>
-                        <th className={classTable}>Campo</th>
-                        <th className={classTable}>Operação</th>
-                        <th className={classTable}>Valor</th>
-                        <th className={classTable + " w-16"}></th>
+                        <th className="table-form">Tabela</th>
+                        <th className="table-form">Campo</th>
+                        <th className="table-form">Operação</th>
+                        <th className="table-form">Valor</th>
+                        <th className="table-form w-16"></th>
                     </tr>
                 </thead>
                 <tbody>
                     {filtros.map((filtro, index) => (
                         <tr key={index}>
-                            <td className={classTable}>
+                            <td className="table-form">
                                 <SelectArray array={tabelas} defaultValue={filtro.tabela} onChange={
                                     (e) => {
                                         const novaTabela = e.target.value;
@@ -164,7 +185,7 @@ export default function Formulario() {
                                     }
                                 }/>
                             </td>
-                            <td className={classTable + " text-center"}>
+                            <td className="table-form text-center">
                                 <SelectArray array={camposSelecionados} defaultValue={filtro.campo} onChange={
                                     (e) => {
                                         const novoCampo = e.target.value;
@@ -176,7 +197,7 @@ export default function Formulario() {
                                     }
                                 }/>
                             </td>
-                            <td className={classTable + " text-center"}>
+                            <td className="table-form text-center">
                                 <SelectArray array={["<", "<=", ">", ">=", "!=", "=="]} defaultValue={filtro.operacao} onChange={
                                     (e) => {
                                         const novaOP = e.target.value;
@@ -188,13 +209,13 @@ export default function Formulario() {
                                     }
                                 }/>
                                 </td>
-                            <td className={classTable}>
-                                <input className={classTable + " w-1/1"}  />
+                            <td className="table-form">
+                                <input className="table-form w-1/1"/>
                             </td>
-                            <td className={classTable}>
+                            <td className="table-form">
                                 <button
                                     type="button"
-                                     className={classTable + " text-red"}
+                                    className="table-form text-red"
                                     onClick={() => handleDeletarFiltro(index)}
                                 >
                                     Deletar
@@ -202,7 +223,7 @@ export default function Formulario() {
                             </td>
                         </tr>
                     ))}
-                    <tr  className={classTable}>
+                    <tr className="table-form">
                         Adicionar
                     </tr>
                 </tbody>
