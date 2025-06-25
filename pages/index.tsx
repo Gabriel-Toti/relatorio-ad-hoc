@@ -13,7 +13,7 @@ export default function Index() {
 
   return (
     <div>
-      <p className="text-2xl text-red-600">{data.message}</p>
+      <p className="flex text-2xl text-red-600 justify-center p-5">{data.message}</p>
       <Formulario />
     </div>
   );

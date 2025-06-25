@@ -2,5 +2,5 @@
 
 export async function hello(/*prisma: PrismaClient*/) {
     // return prisma
-    return { message: "Hello, world!" }
+    return { message: "Relatório Ad Hoc" }
 }

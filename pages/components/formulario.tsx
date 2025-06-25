@@ -44,25 +44,25 @@ const SelectArray = ({
 );
 
 function SelectCampos({campos, onChangeSelect, onChangeGroup}) {
-    return (<table className={"table-form mx-5"}>
+    return (<table className={"table-form"}>
                 <thead>
                     <tr>
-                        <th className="table-form mx-5">Campo</th>
-                        <th className="table-form mx-5">Selecionar</th>
-                        <th className="table-form mx-5">Agrupar</th>
+                        <th className="table-form">Campo</th>
+                        <th className="table-form">Selecionar</th>
+                        <th className="table-form">Agregar</th>
                     </tr>
                 </thead>
                 <tbody>
                     {campos.map((campo, index) => (
                         <tr key={index}>
-                            <td className="table-form mx-5">{campo}</td>
-                            <td className="table-form mx-5">
+                            <td className="table-form">{campo}</td>
+                            <td className="table-form">
                                 <input
                                     type="checkbox"
                                     onChange={(e) => onChangeSelect(campo,e)}
                                 />
                             </td>
-                            <td className="table-form mx-5">
+                            <td className="table-form">
                                 <input
                                     type="checkbox"
                                     onChange={(e) => onChangeGroup(campo,e)}
@@ -136,7 +136,8 @@ export default function Formulario() {
     }
 
     return (
-        <form className="flex flex-col gap-4 w-1/2 m-6">
+        <div className='flex flex-col w-1/2 mx-auto items-center'>
+        <form className="flex flex-col gap-4 mx-full">
             <>
                 <label>
                     Tabelas: 
@@ -167,7 +168,7 @@ export default function Formulario() {
                         <th className="table-form">Campo</th>
                         <th className="table-form">Operação</th>
                         <th className="table-form">Valor</th>
-                        <th className="table-form w-16"></th>
+                        <th className="table-form"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -229,5 +230,6 @@ export default function Formulario() {
                 </tbody>
             </table>
         </form>
+        </div>
     );
 }
