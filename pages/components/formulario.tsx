@@ -1,5 +1,6 @@
 import {useState} from 'react';
 import {Tabelas, ITabela, IColuna} from '../../utils/tables';
+import axios from "axios";
 
 enum Operacao {
     Menor = "<",
@@ -44,6 +45,57 @@ const SelectArray = ({
     </select>
 );
 
+function SelectTabela({tabelas, tabelasSelecionadas, onChange, onRemove}) {
+    return (<>
+        <table className="table-form mx-5">
+            <thead>
+            <tr>
+                <th className="table-form">Nome</th>
+                <th className="table-form">Descrição</th>
+                <th className="table-form">Tabela</th>
+            </tr>
+            </thead>
+            <tbody>
+            {tabelasSelecionadas && tabelasSelecionadas.length > 0 && tabelasSelecionadas.map((tabela, idx) => (
+                <tr key={idx}>
+                <td className="table-form">{tabela.nome}</td>
+                <td className="table-form">{tabela.descricao}</td>
+                <td className="table-form">{tabela.tabela}</td>
+                <td className="table-form">
+                    {tabelasSelecionadas.length === idx + 1 && (
+                        <button
+                            className="table-form mr-5"
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                onRemove(tabela);
+                            }}
+                        >
+                            X
+                        </button>
+                    )}
+                </td>
+                </tr>
+            ))}
+            </tbody>
+        </table>
+        <select
+            className="table-form mx-5"
+            onChange={onChange}
+            defaultValue=""
+        >
+            <option value="" disabled>
+            Selecione uma Tabela
+            </option>
+            {tabelas.map((tabela, index) => (
+            <option key={index} value={tabela.nome}>
+                {tabela.nome}
+            </option>
+            ))}
+        </select></>
+    );
+}
+
 function SelectCampos({campos, camposSelecionados, camposAgrupados, onChangeSelect, onChangeGroup}) {
     console.log("campos", camposSelecionados);
     campos.map(campo => {
@@ -54,6 +106,7 @@ function SelectCampos({campos, camposSelecionados, camposAgrupados, onChangeSele
     return (<table className={"table-form mx-5"}>
                 <thead>
                     <tr>
+                        <th className="table-form mx-5">Tabela</th>
                         <th className="table-form mx-5">Campo</th>
                         <th className="table-form mx-5">Selecionar</th>
                         <th className="table-form mx-5">Agrupar</th>
@@ -62,6 +115,7 @@ function SelectCampos({campos, camposSelecionados, camposAgrupados, onChangeSele
                 <tbody>
                     {campos.map((campo, index) => (
                         <tr key={index}>
+                            <td className="table-form mx-5">{campo.tabela.nome}</td>
                             <td className="table-form mx-5">{campo.campo.descricao}</td>
                             <td className="table-form mx-5">
                                 <input
@@ -124,12 +178,37 @@ function SelectOrderBy({campos}) {
 
 export default function Formulario() {
     const [tabelas, setTabelas] = useState<ITabela[]>(Tabelas);
+    const [tabelasSelecionadas, setTabelasSelecionadas] = useState<ITabela[]>([]);
     const [camposTabela, setCamposTabela] = useState<ICampo[]>([]);
     const [camposSelecionados, setCamposSelecionados] = useState<ICampo[]>([]);
     const [camposAgrupados, setCamposAgrupados] = useState<ICampo[]>([]);
     const [filtros, setFiltros] = useState<IFiltro[]>([]);
     const classTable = "border border-gray-300 rounded p-2"
 
+    function handleRemoveTabela(tabela: ITabela) {
+        const tabelasSelecionadasCopy = tabelasSelecionadas.filter(t => t.nome !== tabela.nome);
+        setTabelasSelecionadas(tabelasSelecionadasCopy);
+
+        const tabelasComJuncao = Tabelas.filter(t =>
+            t.juncoes && t.juncoes.some(j =>
+                tabelasSelecionadasCopy.some(ts => ts.tabela === j)
+                &&
+                !tabelasSelecionadasCopy.some(ts => ts.nome === t.nome)
+            )
+        );
+        if(tabelasSelecionadasCopy.length === 0) {
+            setTabelas(Tabelas);
+        } else {
+            setTabelas(tabelasComJuncao);
+        }
+        if (tabelasSelecionadasCopy) {
+            setCamposTabela(tabelasSelecionadasCopy.flatMap(t => t.colunas.map(c => ({ tabela: t, campo: c }))));
+        }
+        let camposSelecionadosCopy = camposSelecionados.filter(c => c.tabela.nome !== tabela.nome);
+        setCamposSelecionados(camposSelecionadosCopy);
+        setCamposAgrupados(camposAgrupados.filter(c => c.tabela.nome !== tabela.nome));
+        setFiltros(filtros.filter(f => f.tabela.nome !== tabela.nome));
+    }
     function handleAdicionarFiltro() {
         if (camposSelecionados.length === 0) {
             return;
@@ -148,25 +227,48 @@ export default function Formulario() {
     {
         setFiltros(filtros.filter((filtro, index) => index !== id));
     }
-    function getCamposTabela()
-    {
+
+    function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        const formData = {
+            tabela: tabelas[0].tabela,
+            tabelas: tabelas,
+            camposSelecionados: camposSelecionados,
+            filtros: filtros,
+            orderBy: camposAgrupados,
+            groupBy: camposAgrupados
+        };
+        console.log("Form Data:", formData);
         
     }
-
     return (
         <form className="flex flex-col gap-4 w-1/2 m-6">
             <>
                 <label>
-                    Tabelas: 
-                    <SelectArray 
-                        array={tabelas.map(tabela => tabela.nome)}
+                    Tabelas:
+                    <SelectTabela
+                        tabelas={tabelas}
+                        tabelasSelecionadas={tabelasSelecionadas}
                         onChange={(e) => {
                             const tabelaSelecionada = tabelas.find(t => t.nome === e.target.value);
-                            if (tabelaSelecionada) {
-                                setCamposTabela(tabelaSelecionada.colunas.map(c => ({ tabela: tabelaSelecionada, campo: c })));
+                            const tabelasSelecionadasCopy = [...tabelasSelecionadas, tabelaSelecionada];
+                            if (tabelaSelecionada && !tabelasSelecionadas.some(t => t.nome === tabelaSelecionada.nome)) {
+                                setTabelasSelecionadas(tabelasSelecionadasCopy);
+                            }
+                            const tabelasComJuncao = Tabelas.filter(t =>
+                                t.juncoes && t.juncoes.some(j =>
+                                    tabelasSelecionadasCopy.some(ts => ts.tabela === j)
+                                    &&
+                                    !tabelasSelecionadasCopy.some(ts => ts.nome === t.nome)
+                                )
+                            );
+                            setTabelas(tabelasComJuncao);
+                            e.target.value = ""; // Reset select after selection
+                            if (tabelasSelecionadasCopy) {
+                                setCamposTabela(tabelasSelecionadasCopy.flatMap(t => t.colunas.map(c => ({ tabela: t, campo: c }))));
                             }
                         }}
-                        defaultValue={tabelas[0].nome}
+                        onRemove={handleRemoveTabela}
                     />
                 </label>
                 <label>Selecionar campos:</label>

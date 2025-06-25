@@ -1,5 +1,6 @@
 "use server"
 import { PrismaClient } from "../generated/prisma/client";
+import { } from "./tables";
 
 const prisma = new PrismaClient();
 
