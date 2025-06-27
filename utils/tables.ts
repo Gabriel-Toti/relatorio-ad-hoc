@@ -13,6 +13,21 @@ export interface ITabela {
   juncoes?: Array<string>; // Optional, for tables that can be joined
 }
 
+export const tableNames = [
+  'bioma',
+  'bioma_estado',
+  'bioma_municipio',
+  'caracteristica',
+  'caracteristica_bioma',
+  'caracteristica_estado',
+  'caracteristica_municipio',
+  'desmatamento_bioma',
+  'desmatamento_estado',
+  'desmatamento_municipio',
+  'estado',
+  'municipio'
+];
+
 export const Tabelas: ITabela[] = [
   {
     nome: "Desmatamento por Bioma",

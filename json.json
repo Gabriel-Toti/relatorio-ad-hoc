@@ -1,0 +1,33 @@
+[
+  {
+    "estadoId": 1,
+    "estado": {
+      "nome": "Amazonas",
+      "uf": "AM"
+    },
+    "desmatamento": [
+      {
+        "_sum": {
+          "area": 1250.5
+        },
+        "_avg": {
+          "area": 416.83
+        },
+        "_count": {
+          "area": 3
+        }
+      },
+      {
+        "_sum": {
+          "area": 1250.5
+        },
+        "_avg": {
+          "area": 416.83
+        },
+        "_count": {
+          "area": 3
+        }
+      }
+    ]
+  }
+]
