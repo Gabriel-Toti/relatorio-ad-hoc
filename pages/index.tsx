@@ -1,5 +1,5 @@
 import type { Hello } from "../interfaces";
-//import Formulario  from "./components/formulario";
+import Formulario  from "./components/formulario";
 import NovoForm  from "./components/novo-form";
 import useSwr from "swr";
 
@@ -15,6 +15,7 @@ export default function Index() {
   return (
     <div>
       <p className="text-2xl text-red-600">{data.message}</p>
+      <Formulario />
       <NovoForm />
     </div>
   );
