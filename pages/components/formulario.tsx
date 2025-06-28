@@ -183,19 +183,23 @@ function SelectOrderBy({campos}) {
     )
 }
 
-/*function SelectFiltro({filtros, camposSelecionados}){
+function SelectFiltro({filtros, camposSelecionados}){
     const [buttonOn, setButtonOn] = useState({});
-    const [filtros, setFiltros] = useState<IFiltro[]>([]);
+    const [filtrosState, setFiltrosState] = useState<IFiltro[]>(filtros || []);
 
     function handleAdicionarFiltro() {
         if (camposSelecionados.length === 0) {
             return;
         }
-        setFiltros([
-            ...filtros,
+        console.log("Adicionando filtro", camposSelecionados);
+        const campo = camposSelecionados[0];
+        const tabela = campo.tabela
+
+        setFiltrosState([
+            ...filtrosState,
             {
-                tabela: tabelas[0],
-                campo: camposSelecionados[0],
+                tabela: tabela,
+                campo: campo.campo,
                 operacao: Operacao.Igual,
                 valor: ""
             }
@@ -204,7 +208,7 @@ function SelectOrderBy({campos}) {
 
     function handleDeletarFiltro(id)
     {
-        setFiltros(filtros.filter((filtro, index) => index !== id));
+        setFiltrosState(filtrosState.filter((filtro, index) => index !== id));
     }
 
     return(<table>
@@ -216,12 +220,12 @@ function SelectOrderBy({campos}) {
                 <th className="table-form w-1/5">Operação</th>
                 <th className="table-form w-1/5">Valor</th>
                 <th className="table-form w-1/5">
-                    <button className='table-form bg-black font-bold text-white'> + </button>
+                    <button className='table-form bg-black font-bold text-white' type='button' onClick={handleAdicionarFiltro}> + </button>
                 </th>
             </tr>
         </thead>
         <tbody>
-            {filtros.map((filtro, index) => (
+            {filtrosState.map((filtro, index) => (
                 <tr key={index}>
                     <td className="table-form">{filtro.tabela.nome}</td>
                     <td className="table-form">{filtro.campo.descricao}</td>
@@ -272,7 +276,7 @@ function SelectOrderBy({campos}) {
         </tbody>
     </table>
 )
-}*/
+}
 
 export default function Formulario() {
     const [tabelas, setTabelas] = useState<ITabela[]>(Tabelas);
@@ -416,7 +420,7 @@ export default function Formulario() {
             <SelectOrderBy campos={camposSelecionados} />
 
             <label>Filtros:</label>
-            {/*<SelectFiltro filtros={camposSelecionados}/>*/}
+            {<SelectFiltro filtros={filtros} camposSelecionados={camposSelecionados} tabelas={tabelas}/>}
             <table>
                 <thead className='bg-gray-200'>
                     <tr>
