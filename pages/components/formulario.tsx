@@ -45,7 +45,7 @@ const SelectArray = ({
 
 function SelectCampos({campos, onChangeSelect, onChangeGroup}) {
     return (<table className={"table-form"}>
-                <thead>
+                <thead className='bg-gray-200'>
                     <tr>
                         <th className="table-form">Campo</th>
                         <th className="table-form">Selecionar</th>
@@ -78,7 +78,7 @@ function SelectCampos({campos, onChangeSelect, onChangeGroup}) {
 
 function SelectOrderBy({campos}) {
     return (<table>
-                <thead>
+                <thead className='bg-gray-200'>
                     <tr>
                         <th className="table-form">Tabela</th>
                         <th className="table-form">Campo</th>
@@ -124,7 +124,7 @@ export default function Formulario() {
             valor: "50"
         }
     ]);
-    const classTable = "border border-gray-300 rounded p-2"
+    //const classTable = "border border-gray-300 rounded p-2"
 
     function handleDeletarFiltro(id)
     {
@@ -134,41 +134,48 @@ export default function Formulario() {
     {
         
     }
+    function handleAdd(){}
+    function handleReportGraphic(){}
+    function handleReport(){}
 
     return (
-        <div className='flex flex-col w-1/2 mx-auto items-center'>
+        <div className='general'>
         <form className="flex flex-col gap-4 mx-full">
-            <>
-                <label>
-                    Tabelas: 
-                    <SelectArray array={tabelas}/>
-                </label>
-                <label>Selecionar campos:</label>
-                <SelectCampos
-                    campos={camposTabela}
-                    onChangeSelect={(campo, e) => {
-                        if (e.target.checked) {
-                            setCamposSelecionados([...camposSelecionados, campo]);
-                        } else {
-                            setCamposSelecionados(camposSelecionados.filter(c => c !== campo));
-                        }
-                    }}
-                    onChangeGroup={(campo, e) => {
-                        // lógica para agrupar campos
-                    }}
-                />
-                <label>Ordernar por campo:</label>
-                <SelectOrderBy campos={camposSelecionados} />
-            </>
-            Filtros:
+
+            <label>Tabelas:
+                <SelectArray array={tabelas}/>
+            </label>
+
+            <label>Selecionar campos:</label>
+            <SelectCampos
+                campos={camposTabela}
+                onChangeSelect={(campo, e) => {
+                    if (e.target.checked) {
+                        setCamposSelecionados([...camposSelecionados, campo]);
+                    } else {
+                        setCamposSelecionados(camposSelecionados.filter(c => c !== campo));
+                    }
+                }}
+                onChangeGroup={(campo, e) => {
+                    // lógica para agrupar campos
+                }}
+            />
+
+            <label>Ordernar por campo:</label>
+            <SelectOrderBy campos={camposSelecionados} />
+
+            <label>Filtros:</label>
             <table>
-                <thead>
+                <thead className='bg-gray-200'>
                     <tr>
-                        <th className="table-form">Tabela</th>
-                        <th className="table-form">Campo</th>
-                        <th className="table-form">Operação</th>
-                        <th className="table-form">Valor</th>
-                        <th className="table-form"></th>
+                        <th className="table-form w-1/5">Tabela</th>
+                        <th className="table-form w-1/5">Campo</th>
+                        <th className="table-form w-1/5">Categoria</th>
+                        <th className="table-form w-1/5">Operação</th>
+                        <th className="table-form w-1/5">Valor</th>
+                        <th className="table-form w-1/5">
+                            <button className='table-form bg-black font-bold text-white w-1/1' onClick={handleAdd}>Adicionar</button>
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -199,6 +206,18 @@ export default function Formulario() {
                                 }/>
                             </td>
                             <td className="table-form text-center">
+                                <SelectArray array={camposSelecionados} defaultValue={filtro.campo} onChange={
+                                    (e) => {
+                                        const novoCampo = e.target.value;
+                                        setFiltros((prev) =>
+                                            prev.map((f, i) =>
+                                                i === index ? { ...f, campo: novoCampo } : f
+                                            )
+                                        );
+                                    }
+                                }/>
+                            </td>
+                            <td className="table-form text-center">
                                 <SelectArray array={["<", "<=", ">", ">=", "!=", "=="]} defaultValue={filtro.operacao} onChange={
                                     (e) => {
                                         const novaOP = e.target.value;
@@ -208,15 +227,16 @@ export default function Formulario() {
                                             )
                                         );
                                     }
-                                }/>
+                                }
+                                />
                                 </td>
-                            <td className="table-form">
+                            <td className="table-form w-max">
                                 <input className="table-form w-1/1"/>
                             </td>
                             <td className="table-form">
                                 <button
                                     type="button"
-                                    className="table-form text-red"
+                                    className="table-form bg-red-500 font-bold text-white w-1/1"
                                     onClick={() => handleDeletarFiltro(index)}
                                 >
                                     Deletar
@@ -224,11 +244,93 @@ export default function Formulario() {
                             </td>
                         </tr>
                     ))}
-                    <tr className="table-form">
-                        Adicionar
-                    </tr>
                 </tbody>
             </table>
+            <label>Agregações:</label>
+            <table>
+                <thead className='bg-gray-200'>
+                    <tr>
+                        <th className="table-form w-1/6">Tabela</th>
+                        <th className="table-form w-1/6">Campo</th>
+                        <th className="table-form w-1/6">Operação</th>
+                        <th className="table-form w-1/6">
+                            <button className='table-form bg-black font-bold text-white w-1/1' onClick={handleAdd}>Adicionar</button>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {filtros.map((filtro, index) => (
+                        <tr key={index}>
+                            <td className="table-form">
+                                <SelectArray array={tabelas} defaultValue={filtro.tabela} onChange={
+                                    (e) => {
+                                        const novaTabela = e.target.value;
+                                        setFiltros((prev) =>
+                                            prev.map((f, i) =>
+                                                i === index ? { ...f, tabela: novaTabela } : f
+                                            )
+                                        );
+                                    }
+                                }/>
+                            </td>
+                            <td className="table-form text-center">
+                                <SelectArray array={camposSelecionados} defaultValue={filtro.campo} onChange={
+                                    (e) => {
+                                        const novoCampo = e.target.value;
+                                        setFiltros((prev) =>
+                                            prev.map((f, i) =>
+                                                i === index ? { ...f, campo: novoCampo } : f
+                                            )
+                                        );
+                                    }
+                                }/>
+                            </td>
+                            <td className="table-form text-center">
+                                <SelectArray array={["sum", "min", "max", "count"]} defaultValue={filtro.operacao} onChange={
+                                    (e) => {
+                                        const novaOP = e.target.value;
+                                        setFiltros((prev) =>
+                                            prev.map((f, i) =>
+                                                i === index ? { ...f, operacao: novaOP } : f
+                                            )
+                                        );
+                                    }
+                                }
+                                />
+                                </td>
+                            <td className="table-form">
+                                <button
+                                    type="button"
+                                    className="table-form bg-red-500 font-bold text-white w-1/1"
+                                    onClick={() => handleDeletarFiltro(index)}
+                                >
+                                    Deletar
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+            <table className='gap-4 mx-auto flex'>
+                    <td className=''>
+                        <button
+                            type="button"
+                            className="table-form bg-black font-bold text-white w-1/1"
+                            onClick={() => handleReport()}
+                        >
+                            Gerar Relatório
+                        </button>
+                    </td>
+                    <td>
+                        <button
+                            type="button"
+                            className="table-form bg-black font-bold text-white w-1/1"
+                            onClick={() => handleReportGraphic()}
+                        >
+                            Gerar Gráfico
+                        </button>
+                    </td>
+                </table>
         </form>
         </div>
     );
