@@ -664,35 +664,35 @@ export default function Formulario() {
             <SelectAgregation filtros={filtros} camposSelecionados={camposSelecionados} tabelas={tabelas}/>
 
             <table className='gap-4 mx-auto flex'>
-                    <td className=''>
-                        <button
-                            className="table-form bg-black font-bold text-white w-1/1"
-                            onClick={() => handleReport()}
-                            type='button'
-                        >
-                            Gerar Relatório
-                        </button>
-                    </td>
-                    <td>
-                        <button
-                            type="button"
-                            className="table-form bg-black font-bold text-white w-1/1"
-                            onClick={() => handleReportGraphic()}
-                        >
-                            Gerar Gráfico
-                        </button>
-                    </td>
-                    <td>
-                        <button
-                            type="button"
-                            className="table-form bg-black font-bold text-white w-1/1"
-                            onClick={() => handleReset()}
-                        >
-                            Limpar Formulário
-                        </button>
-                    </td>
-                </table>
+                <td>
+                    <button
+                        type="button"
+                        className="table-form bg-black font-bold text-white w-1/1"
+                        onClick={() => handleReset()}
+                    >
+                        Limpar Formulário
+                    </button>
+                </td>
+                <td>
+                    <button
+                        type="button"
+                        className="table-form bg-black font-bold text-white w-1/1"
+                        onClick={() => handleReportGraphic()}
+                    >
+                        Gerar Gráfico
+                    </button>
+                </td>
+                <td>
+                    <button
+                        className="table-form bg-black font-bold text-white w-1/1"
+                        onClick={() => handleReport()}
+                        type='button'
+                    >
+                        Gerar Relatório
+                    </button>
+                </td>
+            </table>
         </form>
-        </div>
+    </div>
     );
 }
