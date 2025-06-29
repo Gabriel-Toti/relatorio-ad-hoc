@@ -590,6 +590,7 @@ export default function Formulario() {
 
     function getCamposTabela(){}
     function handleReportGraphic(){}
+    function handleReset(){}
 
     return (
         <div className='general'>
@@ -679,6 +680,15 @@ export default function Formulario() {
                             onClick={() => handleReportGraphic()}
                         >
                             Gerar Gráfico
+                        </button>
+                    </td>
+                    <td>
+                        <button
+                            type="button"
+                            className="table-form bg-black font-bold text-white w-1/1"
+                            onClick={() => handleReset()}
+                        >
+                            Limpar Formulário
                         </button>
                     </td>
                 </table>
