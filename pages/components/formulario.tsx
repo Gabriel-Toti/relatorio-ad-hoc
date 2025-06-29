@@ -244,7 +244,7 @@ function SelectFiltro({filtros, camposSelecionados, tabelas}){
                 <th className="table-form w-1/5">Operação</th>
                 <th className="table-form w-1/5">Valor</th>
                 <th className="table-form w-1/5">
-                <button className='table-form bg-black font-bold text-white w-1/1' type='button' onClick={novoFiltro}>Novo</button>
+                <button className='table-form bg-black font-bold text-white w-full' type='button' onClick={novoFiltro}>Novo</button>
                 </th>
             </tr>
         </thead>
@@ -426,10 +426,9 @@ function SelectAgregation({filtros, camposSelecionados, tabelas}){
                 <th className="table-form">Tabela</th>
                 <th className="table-form">Campo</th>
                 <th className="table-form">Operação</th>
-                <th className="table-form">Nome</th>
                 <th className="table-form">
                     <button 
-                        className='table-form bg-black font-bold text-white' 
+                        className='table-form bg-black font-bold text-white w-full' 
                         onClick={() => novaAgregacao()}
                         type='button'
                     >
@@ -517,23 +516,6 @@ function SelectAgregation({filtros, camposSelecionados, tabelas}){
                                 }
                             }
                         />
-                        </td>
-                    <td className="table-form w-max">
-                        <input 
-                        onChange={(e) => {
-                            const novoNome = e.target.value;
-                            setAgregacoes( agregacoes.map((agregacao, i) => {
-                                const novosFiltros = [...agregacoes];
-                                novosFiltros[index] = {
-                                    ...novosFiltros[index],
-                                    alias: novoNome
-                                }
-                                return novosFiltros[i];
-                            }
-                            ))
-                            
-                        }}
-                        className="table-form w-full"/>
                     </td>
                     <td className="table-form">
                         {buttonOn[index] ? (
