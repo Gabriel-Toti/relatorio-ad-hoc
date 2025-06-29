@@ -11,11 +11,26 @@ enum Operacao {
     Igual = "=="
 }
 
+enum Agregacao {
+    Soma = "sum",
+    Contagem = "count",
+    Minimo = "min",
+    Maximo = "max",
+    Media = "avg"
+}
+
 interface IFiltro {
     tabela: ITabela,
     campo: ICampo,
     operacao: Operacao | string,
     valor: string
+}
+
+interface IAgregacao {
+    tabela: ITabela,
+    campo: ICampo,
+    operacao: Operacao | string,
+    alias: string
 }
 
 interface ICampo {
@@ -195,8 +210,8 @@ function SelectFiltro({filtros, camposSelecionados, tabelas}){
             {
                 tabela: tabela,
                 campo: campo.campo,
-                operacao: Operacao.Igual,
-                valor: ""
+                operacao: Agregacao.Soma,
+                valor: campo.campo
             }
         ]);
 
@@ -239,7 +254,7 @@ function SelectFiltro({filtros, camposSelecionados, tabelas}){
                     <td className="table-form">
                         <select
                             className="table-form w-full"
-                            value={""}
+                            defaultValue={""}
                             onChange={(e) => {
                                 const nomeCampoSelecionado = e.target.value;
                                 const campoSelecionado = camposSelecionados.find(c => c.tabela.nome === nomeCampoSelecionado);
@@ -268,7 +283,7 @@ function SelectFiltro({filtros, camposSelecionados, tabelas}){
                     <td className="table-form">
                         <select
                             className="table-form w-full"
-                            value={""}
+                            defaultValue={""}
                             onChange={(e) => {
                                 const nomeCampoSelecionado = e.target.value;
                                 const campoSelecionado = camposSelecionados.find(c => c.campo.nome === nomeCampoSelecionado);
@@ -297,7 +312,7 @@ function SelectFiltro({filtros, camposSelecionados, tabelas}){
                     <td className="table-form">
                         <select
                             className="table-form w-full"
-                            value={""}
+                            defaultValue={""}
                             onChange={(e) => {
                                 const nomeCampoSelecionado = e.target.value;
                                 const campoSelecionado = camposSelecionados.find(c => c.campo.nome === nomeCampoSelecionado);
@@ -364,7 +379,7 @@ function SelectFiltro({filtros, camposSelecionados, tabelas}){
 
 function SelectAgregation({filtros, camposSelecionados, tabelas}){
     const [buttonOn, setButtonOn] = useState<boolean[]>([]);
-    const [filtrosState, setFiltrosState] = useState<IFiltro[]>(filtros || []);
+    const [agregacoes, setAgregacoes] = useState<IAgregacao[]>(filtros || []);
 
     function novaAgregacao() {
         const existeLinhaPendente = buttonOn.includes(false);
@@ -375,13 +390,13 @@ function SelectAgregation({filtros, camposSelecionados, tabelas}){
         const campo = camposSelecionados[0];
         const tabela = campo.tabela
 
-        setFiltrosState([
-            ...filtrosState,
+        setAgregacoes([
+            ...agregacoes,
             {
                 tabela: tabela,
                 campo: campo.campo,
                 operacao: Operacao.Igual,
-                valor: ""
+                alias: ""
             }
         ]);
 
@@ -401,7 +416,7 @@ function SelectAgregation({filtros, camposSelecionados, tabelas}){
     function handleDeletarAgregacao(idx)
     {
         //lógica de apagar os dados salvos para usar na geração do relatório
-        setFiltrosState(prev => prev.filter((_, i) => i !== idx));
+        setAgregacoes(prev => prev.filter((_, i) => i !== idx));
         setButtonOn(prev => prev.filter((_, i) => i !== idx));
     }
 
@@ -411,10 +426,11 @@ function SelectAgregation({filtros, camposSelecionados, tabelas}){
                 <th className="table-form">Tabela</th>
                 <th className="table-form">Campo</th>
                 <th className="table-form">Operação</th>
+                <th className="table-form">Nome</th>
                 <th className="table-form">
                     <button 
                         className='table-form bg-black font-bold text-white' 
-                        onClick={() => novaAgregacao}
+                        onClick={() => novaAgregacao()}
                         type='button'
                     >
                         Novo
@@ -423,19 +439,19 @@ function SelectAgregation({filtros, camposSelecionados, tabelas}){
             </tr>
         </thead>
         <tbody>
-            {filtrosState.map((filtro, index) => (
+            {agregacoes.map((filtro, index) => (
                 <tr key={index}>
                     <td className="table-form">
                         <select
                             className="table-form w-full"
-                            value={""}
+                            defaultValue={""}
                             onChange={(e) => {
                                 const nomeCampoSelecionado = e.target.value;
                                 const campoSelecionado = camposSelecionados.find(c => c.tabela.nome === nomeCampoSelecionado);
 
                                 if (!campoSelecionado) return;
 
-                                setFiltrosState(prev => {
+                                setAgregacoes(prev => {
                                     const novosFiltros = [...prev];
                                     novosFiltros[index] = {
                                         ...novosFiltros[index],
@@ -457,14 +473,14 @@ function SelectAgregation({filtros, camposSelecionados, tabelas}){
                     <td className="table-form">
                         <select
                             className="table-form w-full"
-                            value={""}
+                            defaultValue={""}
                             onChange={(e) => {
                                 const nomeCampoSelecionado = e.target.value;
                                 const campoSelecionado = camposSelecionados.find(c => c.campo.nome === nomeCampoSelecionado);
 
                                 if (!campoSelecionado) return;
 
-                                setFiltrosState(prev => {
+                                setAgregacoes(prev => {
                                     const novosFiltros = [...prev];
                                     novosFiltros[index] = {
                                         ...novosFiltros[index],
@@ -489,12 +505,35 @@ function SelectAgregation({filtros, camposSelecionados, tabelas}){
                             onChange={
                                 (e) => {
                                     const novaOP = e.target.value;
+
+                                    setAgregacoes(prev => {
+                                        const novosFiltros = [...prev];
+                                        novosFiltros[index] = {
+                                            ...novosFiltros[index],
+                                            operacao: novaOP
+                                        };
+                                        return novosFiltros;
+                                    });
                                 }
                             }
                         />
                         </td>
                     <td className="table-form w-max">
-                        <input className="table-form w-full"/>
+                        <input 
+                        onChange={(e) => {
+                            const novoNome = e.target.value;
+                            setAgregacoes( agregacoes.map((agregacao, i) => {
+                                const novosFiltros = [...agregacoes];
+                                novosFiltros[index] = {
+                                    ...novosFiltros[index],
+                                    alias: novoNome
+                                }
+                                return novosFiltros[i];
+                            }
+                            ))
+                            
+                        }}
+                        className="table-form w-full"/>
                     </td>
                     <td className="table-form">
                         {buttonOn[index] ? (
@@ -555,8 +594,7 @@ export default function Formulario() {
         setFiltros(filtros.filter(f => f.tabela.nome !== tabela.nome));
     }
 
-    function handleReport(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault();
+    function handleReport() {
         const formData = {
             tabela: tabelas[0].tabela,
             tabelas: tabelas,
@@ -645,9 +683,9 @@ export default function Formulario() {
             <table className='gap-4 mx-auto flex'>
                     <td className=''>
                         <button
-                            type="button"
                             className="table-form bg-black font-bold text-white w-1/1"
-                            onClick={(e) => handleReport(e)}
+                            onClick={() => handleReport()}
+                            type='button'
                         >
                             Gerar Relatório
                         </button>
