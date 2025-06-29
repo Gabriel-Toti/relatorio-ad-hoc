@@ -414,7 +414,11 @@ function SelectAgregation({filtros, camposSelecionados, tabelas}){
                 <th className="table-form">
                     <button 
                         className='table-form bg-black font-bold text-white' 
-                        onClick={() => novaAgregacao}>Novo</button>
+                        onClick={() => novaAgregacao}
+                        type='button'
+                    >
+                        Novo
+                    </button>
                 </th>
             </tr>
         </thead>
@@ -643,7 +647,7 @@ export default function Formulario() {
                         <button
                             type="button"
                             className="table-form bg-black font-bold text-white w-1/1"
-                            onClick={() => handleReport(e)}
+                            onClick={(e) => handleReport(e)}
                         >
                             Gerar Relatório
                         </button>
