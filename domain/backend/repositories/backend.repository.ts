@@ -1,6 +1,6 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "../../../drizzle/schema";
-import { SelectedFields } from "drizzle-orm";
+import { SelectedFields, sql } from "drizzle-orm";
 import { Tabelas } from "../../../utils/tables";
 import { eq, gt, lt, gte, lte, ne, like, ilike, and, or, sum, min, max, avg, count } from 'drizzle-orm';
 
@@ -27,9 +27,25 @@ const agregacoesLista = {
     'COUNT': count,
 };
 
+const traducaoTabela = {
+    'desmatamento_estado': schema.desmatamentoEstado,
+    'desmatamento_municipio': schema.desmatamentoMunicipio,
+    'desmatamento_bioma': schema.desmatamentoBioma,
+    'bioma': schema.bioma,
+    'estado': schema.estado,
+    'municipio': schema.municipio,
+    'caracteristica': schema.caracteristica,
+    'caracteristica_municipio': schema.caracteristicaMunicipio,
+    'caracteristica_estado': schema.caracteristicaEstado,
+    'caracteristica_bioma': schema.caracteristicaBioma,
+    'bioma_estado': schema.biomaEstado,
+    'bioma_municipio': schema.biomaMunicipio,
+}
+
 interface QueryColuna {
     nome: string;
     tabela: string;
+    alias?: string; // Optional alias for the column
 }
 
 interface QueryAgregacao {
@@ -44,7 +60,7 @@ interface QueryFiltro {
     valor: string; 
 }
 
-interface QueryArguments {
+export interface QueryArguments {
     tabelas: string[];
     colunas: QueryColuna[];
     filtros?: QueryFiltro[];
@@ -56,49 +72,66 @@ interface QueryArguments {
 export async function executeQuery(args : QueryArguments) {
     const { tabelas, colunas, filtros, groupBy, orderBy, agregacoes } = args;
 
+    console.log("Executing query with arguments:", args);
+
     // Construct the query using Drizzle ORM
     let querySelectArg = {}
     colunas.forEach((coluna, index) =>{
-        querySelectArg = {...querySelectArg, [coluna.nome]: schema[coluna.tabela]}
+        console.log("Processing column:", coluna);
+        querySelectArg = {...querySelectArg, [coluna.nome]: traducaoTabela[coluna.tabela][coluna.nome]}
     })
+    console.log("Query Select Arguments:", querySelectArg);
 
-    agregacoes.forEach(agg => {
-        const column = db[agg.coluna.tabela][agg.coluna.nome];
-        const alias = agg.alias || `${agg.tipo}_${agg.coluna.nome}`;
-        querySelectArg = {...querySelectArg, [alias]:agregacoesLista[agg.tipo](column)};
-    });
+
+    if (agregacoes) {
+        agregacoes.forEach(agg => {
+            const column = traducaoTabela[agg.coluna.tabela][agg.coluna.nome];
+            const alias = agg.alias || `${agg.tipo}_${agg.coluna.nome}`;
+            querySelectArg = {...querySelectArg, [alias]:agregacoesLista[agg.tipo](column)};
+        });
+    }
     // Assume the first table in 'tabelas' is the main table to select from
-    let query = db.select(querySelectArg).from(db[tabelas[0]]).$dynamic();
-
+    let query = db.select(querySelectArg).from(traducaoTabela[tabelas[0]]).$dynamic();
      
     tabelas.slice(1).forEach(tabela => {
-        const tabelaDefinicao = Tabelas.find(t => t.nome === tabela);
+        const tabelaDefinicao = Tabelas.find(t => t.tabela === tabela);
+        if (!tabelaDefinicao) {
+            return
+        }
         const juncaoInfo = tabelaDefinicao?.juncoes.find(juncao => juncao.tabelaDe === tabelas[0] || juncao.tabelaPara === tabelas[0]);
-        query = query.innerJoin(schema[tabela], 
-            eq(schema[juncaoInfo.tabelaDe][juncaoInfo.colunaDe], 
-                schema[juncaoInfo.tabelaPara][juncaoInfo.colunaPara])
-        ); // specify join condition
+        console.log("Juncao Info:", juncaoInfo);
+        query = query.innerJoin(traducaoTabela[tabela], 
+            eq(traducaoTabela[juncaoInfo.tabelaDe][juncaoInfo.colunaDe], 
+                traducaoTabela[juncaoInfo.tabelaPara][juncaoInfo.colunaPara])
+        );
+        
     });
 
     // Add filters if provided
     if (filtros) {
         filtros.forEach(filtro => {
-            query.where(operadores[filtro.operador](schema[filtro.coluna.tabela][filtro.coluna.nome], filtro.valor));
+            query.where(operadores[filtro.operador](traducaoTabela[filtro.coluna.tabela][filtro.coluna.nome], filtro.valor));
         });
     }
 
     // Add group by if provided
     if (groupBy) {
-        const groupByCols = groupBy.map(col => schema[col.tabela][col.nome]);
+        const groupByCols = groupBy.map(col => traducaoTabela[col.tabela][col.nome]);
         query.groupBy(...groupByCols);
     }
 
     // Add order by if provided
     if (orderBy) {
-        const orderByCols = orderBy.map(col => schema[col.tabela][col.nome]);
+        const orderByCols = orderBy.map((col) => {
+            const coluna = traducaoTabela[col.tabela][col.nome]
+            if (!coluna || true ) {
+                return sql`${col.nome}`; // Fallback to raw SQL if not found
+            }
+            return coluna
+        });
         query.orderBy(...orderByCols);
     }
-
+    console.log("Final query:", query.toSQL());
     return await query;
 }
 {

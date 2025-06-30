@@ -257,7 +257,7 @@ export default function Formulario() {
                             }
                             const tabelasComJuncao = Tabelas.filter(t =>
                                 t.juncoes && t.juncoes.some(j =>
-                                    tabelasSelecionadasCopy.some(ts => ts.tabela === j)
+                                    tabelasSelecionadasCopy.some(ts => ts.tabela === j.tabelaDe || ts.tabela === j.tabelaPara)
                                     &&
                                     !tabelasSelecionadasCopy.some(ts => ts.nome === t.nome)
                                 )
