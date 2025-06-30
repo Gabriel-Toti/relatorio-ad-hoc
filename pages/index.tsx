@@ -25,6 +25,8 @@ export default function Index() {
 
   return (
     <div>
+      <p className="flex text-3xl font-bold text-red-500 justify-center p-5">{data.message}</p>
+      <Formulario />
       <button
         onClick={() => {
           const queryArguments = {
@@ -56,7 +58,6 @@ export default function Index() {
       >
         Teste Query
       </button>
-      <Formulario/>
     </div>
   );
 }
