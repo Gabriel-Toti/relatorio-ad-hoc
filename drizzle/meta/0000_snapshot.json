@@ -1,0 +1,812 @@
+{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "prevId": "",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.estado": {
+      "name": "estado",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "smallint",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "uf": {
+          "name": "uf",
+          "type": "char(2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome_estado": {
+          "name": "nome_estado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "indice_uf_estado": {
+          "name": "indice_uf_estado",
+          "columns": [
+            {
+              "expression": "uf",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "bpchar_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "estado_uf_key": {
+          "columns": [
+            "uf"
+          ],
+          "nullsNotDistinct": false,
+          "name": "estado_uf_key"
+        },
+        "estado_nome_estado_key": {
+          "columns": [
+            "nome_estado"
+          ],
+          "nullsNotDistinct": false,
+          "name": "estado_nome_estado_key"
+        }
+      },
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false
+    },
+    "public.caracteristica": {
+      "name": "caracteristica",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "smallint",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nome_caracteristica": {
+          "name": "nome_caracteristica",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "categoria": {
+          "name": "categoria",
+          "type": "varchar(13)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "indice_categoria_caracteristica": {
+          "name": "indice_categoria_caracteristica",
+          "columns": [
+            {
+              "expression": "categoria",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false
+    },
+    "public.desmatamento_bioma": {
+      "name": "desmatamento_bioma",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "area_desmatada": {
+          "name": "area_desmatada",
+          "type": "numeric(20, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ano": {
+          "name": "ano",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bioma_id": {
+          "name": "bioma_id",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "desmatamento_bioma_bioma_id_fkey": {
+          "name": "desmatamento_bioma_bioma_id_fkey",
+          "tableFrom": "desmatamento_bioma",
+          "tableTo": "bioma",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "bioma_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "desmatamento_bioma_ano_check": {
+          "name": "desmatamento_bioma_ano_check",
+          "value": "(ano >= 1900) AND (ano <= 2100)"
+        },
+        "desmatamento_bioma_area_desmatada_check": {
+          "name": "desmatamento_bioma_area_desmatada_check",
+          "value": "area_desmatada >= (0)::numeric"
+        }
+      },
+      "policies": {},
+      "isRLSEnabled": false
+    },
+    "public.desmatamento_estado": {
+      "name": "desmatamento_estado",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "area_desmatada": {
+          "name": "area_desmatada",
+          "type": "numeric(20, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ano": {
+          "name": "ano",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "estado_id": {
+          "name": "estado_id",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bioma_id": {
+          "name": "bioma_id",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "desmatamento_estado_bioma_id_fkey": {
+          "name": "desmatamento_estado_bioma_id_fkey",
+          "tableFrom": "desmatamento_estado",
+          "tableTo": "bioma",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "bioma_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "desmatamento_estado_estado_id_fkey": {
+          "name": "desmatamento_estado_estado_id_fkey",
+          "tableFrom": "desmatamento_estado",
+          "tableTo": "estado",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "estado_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "desmatamento_estado_ano_check": {
+          "name": "desmatamento_estado_ano_check",
+          "value": "(ano >= 1900) AND (ano <= 2100)"
+        },
+        "desmatamento_estado_area_desmatada_check": {
+          "name": "desmatamento_estado_area_desmatada_check",
+          "value": "area_desmatada >= (0)::numeric"
+        }
+      },
+      "policies": {},
+      "isRLSEnabled": false
+    },
+    "public.desmatamento_municipio": {
+      "name": "desmatamento_municipio",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "area_desmatada": {
+          "name": "area_desmatada",
+          "type": "numeric(20, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ano": {
+          "name": "ano",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "municipio_id": {
+          "name": "municipio_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bioma_id": {
+          "name": "bioma_id",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "desmatamento_municipio_bioma_id_fkey": {
+          "name": "desmatamento_municipio_bioma_id_fkey",
+          "tableFrom": "desmatamento_municipio",
+          "tableTo": "bioma",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "bioma_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "desmatamento_municipio_municipio_id_fkey": {
+          "name": "desmatamento_municipio_municipio_id_fkey",
+          "tableFrom": "desmatamento_municipio",
+          "tableTo": "municipio",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "municipio_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "desmatamento_municipio_ano_check": {
+          "name": "desmatamento_municipio_ano_check",
+          "value": "(ano >= 1900) AND (ano <= 2100)"
+        },
+        "desmatamento_municipio_area_desmatada_check": {
+          "name": "desmatamento_municipio_area_desmatada_check",
+          "value": "area_desmatada >= (0)::numeric"
+        }
+      },
+      "policies": {},
+      "isRLSEnabled": false
+    },
+    "public.bioma": {
+      "name": "bioma",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "smallint",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nome_bioma": {
+          "name": "nome_bioma",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "indice_nome_bioma": {
+          "name": "indice_nome_bioma",
+          "columns": [
+            {
+              "expression": "nome_bioma",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "bioma_nome_bioma_key": {
+          "columns": [
+            "nome_bioma"
+          ],
+          "nullsNotDistinct": false,
+          "name": "bioma_nome_bioma_key"
+        }
+      },
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false
+    },
+    "public.municipio": {
+      "name": "municipio",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nome_municipio": {
+          "name": "nome_municipio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "estado_id": {
+          "name": "estado_id",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "indice_nome_municipio": {
+          "name": "indice_nome_municipio",
+          "columns": [
+            {
+              "expression": "nome_municipio",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "municipio_estado_id_fkey": {
+          "name": "municipio_estado_id_fkey",
+          "tableFrom": "municipio",
+          "tableTo": "estado",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "estado_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false
+    },
+    "public.bioma_municipio": {
+      "name": "bioma_municipio",
+      "schema": "",
+      "columns": {
+        "municipio_id": {
+          "name": "municipio_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bioma_id": {
+          "name": "bioma_id",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "bioma_municipio_bioma_id_fkey": {
+          "name": "bioma_municipio_bioma_id_fkey",
+          "tableFrom": "bioma_municipio",
+          "tableTo": "bioma",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "bioma_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "bioma_municipio_municipio_id_fkey": {
+          "name": "bioma_municipio_municipio_id_fkey",
+          "tableFrom": "bioma_municipio",
+          "tableTo": "municipio",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "municipio_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "bioma_municipio_pkey": {
+          "name": "bioma_municipio_pkey",
+          "columns": [
+            "municipio_id",
+            "bioma_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false
+    },
+    "public.bioma_estado": {
+      "name": "bioma_estado",
+      "schema": "",
+      "columns": {
+        "bioma_id": {
+          "name": "bioma_id",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "estado_id": {
+          "name": "estado_id",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "bioma_estado_bioma_id_fkey": {
+          "name": "bioma_estado_bioma_id_fkey",
+          "tableFrom": "bioma_estado",
+          "tableTo": "bioma",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "bioma_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "bioma_estado_estado_id_fkey": {
+          "name": "bioma_estado_estado_id_fkey",
+          "tableFrom": "bioma_estado",
+          "tableTo": "estado",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "estado_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "bioma_estado_pkey": {
+          "name": "bioma_estado_pkey",
+          "columns": [
+            "bioma_id",
+            "estado_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false
+    },
+    "public.caracteristica_municipio": {
+      "name": "caracteristica_municipio",
+      "schema": "",
+      "columns": {
+        "caracteristica_id": {
+          "name": "caracteristica_id",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "municipio_id": {
+          "name": "municipio_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "area": {
+          "name": "area",
+          "type": "numeric(20, 2)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "caracteristica_municipio_caracteristica_id_fkey": {
+          "name": "caracteristica_municipio_caracteristica_id_fkey",
+          "tableFrom": "caracteristica_municipio",
+          "tableTo": "caracteristica",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "caracteristica_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "caracteristica_municipio_municipio_id_fkey": {
+          "name": "caracteristica_municipio_municipio_id_fkey",
+          "tableFrom": "caracteristica_municipio",
+          "tableTo": "municipio",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "municipio_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "caracteristica_municipio_pkey": {
+          "name": "caracteristica_municipio_pkey",
+          "columns": [
+            "caracteristica_id",
+            "municipio_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "caracteristica_municipio_area_check": {
+          "name": "caracteristica_municipio_area_check",
+          "value": "area >= (0)::numeric"
+        }
+      },
+      "policies": {},
+      "isRLSEnabled": false
+    },
+    "public.caracteristica_bioma": {
+      "name": "caracteristica_bioma",
+      "schema": "",
+      "columns": {
+        "caracteristica_id": {
+          "name": "caracteristica_id",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bioma_id": {
+          "name": "bioma_id",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "area": {
+          "name": "area",
+          "type": "numeric(20, 2)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "caracteristica_bioma_bioma_id_fkey": {
+          "name": "caracteristica_bioma_bioma_id_fkey",
+          "tableFrom": "caracteristica_bioma",
+          "tableTo": "bioma",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "bioma_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "caracteristica_bioma_caracteristica_id_fkey": {
+          "name": "caracteristica_bioma_caracteristica_id_fkey",
+          "tableFrom": "caracteristica_bioma",
+          "tableTo": "caracteristica",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "caracteristica_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "caracteristica_bioma_pkey": {
+          "name": "caracteristica_bioma_pkey",
+          "columns": [
+            "caracteristica_id",
+            "bioma_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "caracteristica_bioma_area_check": {
+          "name": "caracteristica_bioma_area_check",
+          "value": "area >= (0)::numeric"
+        }
+      },
+      "policies": {},
+      "isRLSEnabled": false
+    },
+    "public.caracteristica_estado": {
+      "name": "caracteristica_estado",
+      "schema": "",
+      "columns": {
+        "caracteristica_id": {
+          "name": "caracteristica_id",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "estado_id": {
+          "name": "estado_id",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "area": {
+          "name": "area",
+          "type": "numeric(20, 2)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "caracteristica_estado_caracteristica_id_fkey": {
+          "name": "caracteristica_estado_caracteristica_id_fkey",
+          "tableFrom": "caracteristica_estado",
+          "tableTo": "caracteristica",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "caracteristica_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "caracteristica_estado_estado_id_fkey": {
+          "name": "caracteristica_estado_estado_id_fkey",
+          "tableFrom": "caracteristica_estado",
+          "tableTo": "estado",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "estado_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "caracteristica_estado_pkey": {
+          "name": "caracteristica_estado_pkey",
+          "columns": [
+            "caracteristica_id",
+            "estado_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "caracteristica_estado_area_check": {
+          "name": "caracteristica_estado_area_check",
+          "value": "area >= (0)::numeric"
+        }
+      },
+      "policies": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "tables": {}
+  }
+}
