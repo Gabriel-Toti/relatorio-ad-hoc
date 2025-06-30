@@ -30,7 +30,7 @@ export default function Index() {
           const queryArguments = {
             tabelas: ["desmatamento_estado", "estado"],
             colunas: [
-              { nome: "nomeEstado", tabela: "estado" },
+              { nome: "nome_estado", tabela: "estado" },
             ],
             filtros: [
               {
@@ -41,13 +41,13 @@ export default function Index() {
             ],
             groupBy: [
               //{ nome: "ano", tabela: "desmatamento_estado" },
-              { nome: "nomeEstado", tabela: "estado" }
+              { nome: "nome_estado", tabela: "estado" }
             ],
             agregacoes: [
               {
                 tipo: "SUM",
-                alias: "totalDesmatado",
-                coluna: { nome: "areaDesmatada", tabela: "desmatamento_estado" }, 
+                alias: "total_desmatado",
+                coluna: { nome: "area_desmatada", tabela: "desmatamento_estado" }, 
               }
             ],
           }
