@@ -161,7 +161,6 @@ function SelectCampos({campos, camposSelecionados, camposAgrupados, onChangeSele
             </table>
     );
 }
-
 function SelectOrderBy({campos}) {
     return (<table>
                 <thead className='bg-gray-200'>
@@ -577,6 +576,7 @@ export default function Formulario() {
     }
 
     function handleReport() {
+
         const formData = {
             tabela: tabelas[0].tabela,
             tabelas: tabelas,
@@ -691,6 +691,7 @@ export default function Formulario() {
                         Gerar Relatório
                     </button>
                 </td>
+
             </table>
         </form>
     </div>
