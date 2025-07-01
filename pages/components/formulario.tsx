@@ -170,6 +170,28 @@ function SelectCampos({campos, camposSelecionados, agregacoes, camposAgrupados, 
         }
     }, [camposSelecionados])
 
+    useEffect(() => {
+        if(camposAgrupados.length > 0 && camposAgrupados.length < camposSelecionados.length)
+        {
+            onChangeAgregacoes();
+
+            const selecionados = new Set(camposSelecionados);
+            setLocked(prev => {
+                
+                for(let i = 0; i < campos.length; i++)
+                {
+                    let campo = campos[i];
+                    if(selecionados.has(campo))
+                    {
+                        prev[i] = true;
+                    }
+                }
+
+                return prev
+            });
+        }
+    }, [camposAgrupados])
+
     return (<table className={"table-form"}>
                 <thead className='bg-gray-200'>
                     <tr>

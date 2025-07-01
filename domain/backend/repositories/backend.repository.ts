@@ -80,7 +80,7 @@ const toCamelCase = (str: string) =>
 export async function executeQuery(args : QueryArguments) {
     const { tabelas, colunas, filtros, groupBy, orderBy, agregacoes } = args;
 
-    console.log("Executing query with arguments:", args, agregacoes[0].coluna);
+    console.log("Executing query with arguments:", args);
 
     // Construct the query using Drizzle ORM
     let querySelectArg = {}
