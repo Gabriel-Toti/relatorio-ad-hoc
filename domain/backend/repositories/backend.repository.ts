@@ -1,10 +1,19 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "../../../drizzle/schema";
 import { SelectedFields, sql } from "drizzle-orm";
-import { Tabelas } from "../../../utils/tables";
+import { Tabelas, TabelaID } from "../../../utils/tables";
 import { eq, gt, lt, gte, lte, ne, like, ilike, and, or, sum, min, max, avg, count } from 'drizzle-orm';
+import { getOrderByOperators } from "drizzle-orm";
 
 const db = drizzle(process.env.DATABASE_URL!)
+
+enum Operadores {
+    '=', '>', '<', '>=', '<=', '!=', 'LIKE', 'ILIKE', 'AND', 'OR'
+}
+
+enum Agregacoes {
+    'SUM', 'MIN', 'MAX', 'AVG', 'COUNT'
+}
 
 const operadores = {
     '=': eq,
@@ -30,7 +39,7 @@ const agregacoesLista = {
 
 interface QueryColuna {
     nome: string;
-    tabela: string;
+    tabela: TabelaID;
     alias?: string; // Optional alias for the column
 }
 
@@ -46,12 +55,19 @@ interface QueryFiltro {
     valor: string; 
 }
 
+interface QueryOrdering {
+    nome: string;
+    tabela: string;
+    alias?: string; // Optional alias for the column
+    ordem: 'asc' | 'desc';
+}
+
 export interface QueryArguments {
     tabelas: string[];
     colunas: QueryColuna[];
     filtros?: QueryFiltro[];
     groupBy?: QueryColuna[];
-    orderBy?: QueryColuna[];
+    orderBy?: QueryOrdering[];
     agregacoes?: QueryAgregacao[];
 }
 
@@ -64,7 +80,7 @@ const toCamelCase = (str: string) =>
 export async function executeQuery(args : QueryArguments) {
     const { tabelas, colunas, filtros, groupBy, orderBy, agregacoes } = args;
 
-    console.log("Executing query with arguments:", args);
+    console.log("Executing query with arguments:", args, agregacoes[0].coluna);
 
     // Construct the query using Drizzle ORM
     let querySelectArg = {}
@@ -75,6 +91,7 @@ export async function executeQuery(args : QueryArguments) {
 
     if (agregacoes) {
         agregacoes.forEach(agg => {
+            console.log(agregacoesLista[agg.tipo], agg.tipo)
             const column = schema[agg.coluna.tabela][agg.coluna.nome];
             const alias = agg.alias || `${agg.tipo}_${agg.coluna.nome}`;
             querySelectArg = {...querySelectArg, [alias]:sql`${agregacoesLista[agg.tipo](column)} as ${sql.raw(alias)}`};
@@ -107,9 +124,13 @@ export async function executeQuery(args : QueryArguments) {
 
     // Add filters if provided
     if (filtros) {
-        filtros.forEach(filtro => {
-            query.where(operadores[filtro.operador](schema[filtro.coluna.tabela][filtro.coluna.nome], filtro.valor));
+        
+        const filtroOp = filtros.map(filtro => {
+            return operadores[filtro.operador](schema[filtro.coluna.tabela][filtro.coluna.nome], filtro.valor)
+            
         });
+
+        query.where(and(...filtroOp));
     }
 
     // Add group by if provided
@@ -122,16 +143,13 @@ export async function executeQuery(args : QueryArguments) {
     if (orderBy) {
         const orderByCols = orderBy.map((col) => {
             const coluna = schema[col.tabela][col.nome]
-            if (!coluna || true ) {
+            if (!coluna /*|| true*/ ) {
                 return sql`${col.nome}`; // Fallback to raw SQL if not found
             }
-            return coluna
+            return getOrderByOperators()[col.ordem](coluna)
         });
         query.orderBy(...orderByCols);
     }
     console.log("Final query:", query.toSQL());
     return await query;
-}
-{
-
 }

@@ -15,7 +15,8 @@ export default async function handler(
     const data = await executeQueryService(args);
     res.status(200).json(data);
   } catch (error) {
-    const err = handleError(error);
-    res.status(err.status).json(err.error);
+    // const err = handleError(error);
+    // res.status(err.status).json(err.error);
+    throw error;
   }
 }
