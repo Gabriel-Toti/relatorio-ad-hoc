@@ -26,7 +26,30 @@ export default function Index() {
 
   return (
     <div>
-      <Grafico></Grafico>
+      <Grafico payload={{
+            tabelas: ["desmatamento_estado", "estado"],
+            colunas: [
+              { nome: "nome_estado", tabela: "estado" },
+            ],
+            filtros: [
+              {
+                coluna: { nome: "ano", tabela: "desmatamento_estado" },
+                operador: ">",
+                valor: "2010",
+              }
+            ],
+            groupBy: [
+              //{ nome: "ano", tabela: "desmatamento_estado" },
+              { nome: "nome_estado", tabela: "estado" }
+            ],
+            agregacoes: [
+              {
+                tipo: "SUM",
+                alias: "total_desmatado",
+                coluna: { nome: "area_desmatada", tabela: "desmatamento_estado" }, 
+              }
+            ],
+          }}></Grafico>
       <button
         onClick={() => {
           const queryArguments = {
