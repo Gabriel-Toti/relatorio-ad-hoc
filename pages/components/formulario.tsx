@@ -578,12 +578,19 @@ function SelectAgregation({ campos, agregacoes, setAgregacoes}){
                             }}
                             disabled={buttonOn[index]}
                         >
-                            <option value="" disabled>Selecione AAAAAAAAAAAAAAAAAAAAAAA</option>
-                            {campos.map((campoObj, i) => (
-                                <option key={i} value={campoObj.tabela.tabela}>
-                                    {campoObj.tabela.nome}
-                                </option>
-                            ))}
+                            <option value="" disabled>Selecione Agregação</option>
+                            {campos
+                                .filter(
+                                    (campoObj, i, arr) =>
+                                        arr.findIndex(
+                                            (c) => c.tabela.tabela === campoObj.tabela.tabela
+                                        ) === i
+                                )
+                                .map((campoObj, i) => (
+                                    <option key={i} value={campoObj.tabela.tabela}>
+                                        {campoObj.tabela.nome}
+                                    </option>
+                                ))}
                         </select>
                     </td>
                     <td className="table-form">
@@ -718,7 +725,7 @@ export default function Formulario({openTableReport, openGraphReport}: IControl)
             orderBy: ordering.map(campo => { return { nome: campo.campo.nome, tabela: campo.tabela.tabela, ordem: campo.ordem }}),
             agregacoes: agregacoes.map(agregacao => { return { tipo: agregacao.operacao, alias: agregacao.alias, coluna: { nome: agregacao.campo.campo.nome, tabela: agregacao.campo.tabela.tabela as TabelaID} } })
         };
-
+        console.log(formData);
         setQueryPayload(formData);
         openTableReport();
     }
@@ -746,7 +753,7 @@ export default function Formulario({openTableReport, openGraphReport}: IControl)
             orderBy: ordering.map(campo => { return { nome: campo.campo.nome, tabela: campo.tabela.tabela, ordem: campo.ordem }}),
             agregacoes: agregacoes.map(agregacao => { return { tipo: agregacao.operacao, alias: agregacao.alias, coluna: { nome: agregacao.campo.campo.nome, tabela: agregacao.campo.tabela.tabela as TabelaID} } })
         };
-
+        console.log("formData",formData);
         setQueryPayload(formData);
         openGraphReport();
     }
