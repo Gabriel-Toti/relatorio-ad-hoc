@@ -20,20 +20,44 @@ export interface IColuna {
     juncoes?: Array<IJuncao>;
   }
   
-  export const tableNames = [
-    'bioma',
-    'bioma_estado',
-    'bioma_municipio',
-    'caracteristica',
-    'caracteristica_bioma',
-    'caracteristica_estado',
-    'caracteristica_municipio',
-    'desmatamento_bioma',
-    'desmatamento_estado',
-    'desmatamento_municipio',
-    'estado',
-    'municipio'
-  ];
+
+  export enum TabelaID {
+    bioma = 'bioma',
+    bioma_estado = 'bioma_estado',
+    bioma_municipio = 'bioma_municipio',
+    caracteristica = 'caracteristica',
+    caracteristica_bioma = 'caracteristica_bioma',
+    caracteristica_estado = 'caracteristica_estado',
+    caracteristica_municipio = 'caracteristica_municipio',
+    desmatamento_bioma = 'desmatamento_bioma',
+    desmatamento_estado = 'desmatamento_estado',
+    desmatamento_municipio = 'desmatamento_municipio',
+    biomaEstado = 'biomaEstado',
+    biomaMunicipio = 'biomaMunicipio',
+    caracteristicaBioma = 'caracteristicaBioma',
+    caracteristicaEstado = 'caracteristicaEstado',
+    caracteristicaMunicipio = 'caracteristicaMunicipio',
+    desmatamentoBioma = 'desmatamentoBioma',
+    desmatamentoEstado = 'desmatamentoEstado',
+    desmatamentoMunicipio = 'desmatamentoMunicipio',
+    estado = 'estado',
+    municipio = 'municipio'
+  }
+
+  export enum TabelaIDCamel {
+    bioma = 'bioma',
+    biomaEstado = 'biomaEstado',
+    biomaMunicipio = 'biomaMunicipio',
+    caracteristica = 'caracteristica',
+    caracteristicaBioma = 'caracteristicaBioma',
+    caracteristicaEstado = 'caracteristicaEstado',
+    caracteristicaMunicipio = 'caracteristicaMunicipio',
+    desmatamentoBioma = 'desmatamentoBioma',
+    desmatamentoEstado = 'desmatamentoEstado',
+    desmatamentoMunicipio = 'desmatamentoMunicipio',
+    estado = 'estado',
+    municipio = 'municipio'
+  }
   
   // As junções (joins) descritas acima em Tabelas refletem os relacionamentos definidos no arquivo de relações do Drizzle ORM.
   // Veja #file:relations.ts para os detalhes dos relacionamentos entre tabelas.

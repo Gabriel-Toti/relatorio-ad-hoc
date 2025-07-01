@@ -1,11 +1,19 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "../../../drizzle/schema";
 import { SelectedFields, sql } from "drizzle-orm";
-import { Tabelas } from "../../../utils/tables";
+import { Tabelas, TabelaID } from "../../../utils/tables";
 import { eq, gt, lt, gte, lte, ne, like, ilike, and, or, sum, min, max, avg, count } from 'drizzle-orm';
 import { getOrderByOperators } from "drizzle-orm";
 
 const db = drizzle(process.env.DATABASE_URL!)
+
+enum Operadores {
+    '=', '>', '<', '>=', '<=', '!=', 'LIKE', 'ILIKE', 'AND', 'OR'
+}
+
+enum Agregacoes {
+    'SUM', 'MIN', 'MAX', 'AVG', 'COUNT'
+}
 
 const operadores = {
     '=': eq,
@@ -31,7 +39,7 @@ const agregacoesLista = {
 
 interface QueryColuna {
     nome: string;
-    tabela: string;
+    tabela: TabelaID;
     alias?: string; // Optional alias for the column
 }
 
