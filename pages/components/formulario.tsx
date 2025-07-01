@@ -48,6 +48,7 @@ interface IOrdem {
 
 interface IControl {
     openTableReport: () => void;
+    openGraphReport: () => void;
 }
 
 const SelectArray = ({
@@ -357,7 +358,6 @@ function SelectFiltro({filtros, setFiltros, camposSelecionados, tabelas}){
             <tr>
                 <th className="table-form w-1/5">Tabela</th>
                 <th className="table-form w-1/5">Campo</th>
-                <th className="table-form w-1/5">Categoria</th>
                 <th className="table-form w-1/5">Operação</th>
                 <th className="table-form w-1/5">Valor</th>
                 <th className="table-form w-1/5">
@@ -427,37 +427,8 @@ function SelectFiltro({filtros, setFiltros, camposSelecionados, tabelas}){
                             ))}
                         </select>
                     </td>
-                    <td className="table-form">
-                        <select
-                            className="table-form w-full"
-                            defaultValue={""}
-                            onChange={(e) => {
-                                const nomeCampoSelecionado = e.target.value;
-                                const campoSelecionado = camposSelecionados.find(c => c.campo.nome === nomeCampoSelecionado);
-
-                                if (!campoSelecionado) return;
-
-                                setFiltros(prev => {
-                                    const novosFiltros = [...prev];
-                                    novosFiltros[index] = {
-                                        ...novosFiltros[index],
-                                        campo: campoSelecionado
-                                    };
-                                    return novosFiltros;
-                                });
-                            }}
-                            disabled={!filtro.tabela || buttonOn[index]}
-                        >
-                            <option value="" disabled>Selecione</option>
-                            {camposSelecionados.map((campoObj, i) => (
-                                <option key={i} value={campoObj.campo.nome} disabled={buttonOn[index]}>
-                                    {campoObj.campo.descricao}
-                                </option>
-                            ))}
-                        </select>
-                    </td>
                     <td className="table-form text-center">
-                        <SelectArray array={["<", "<=", ">", ">=", "!=", "="]} 
+                        <SelectArray array={["<", "<=", ">", ">=", "!=", "=", "LIKE"]} 
                             defaultValue={filtro.operacao} 
                             onChange={
                                 (e) => {
@@ -607,12 +578,19 @@ function SelectAgregation({ campos, agregacoes, setAgregacoes}){
                             }}
                             disabled={buttonOn[index]}
                         >
-                            <option value="" disabled>Selecione AAAAAAAAAAAAAAAAAAAAAAA</option>
-                            {campos.map((campoObj, i) => (
-                                <option key={i} value={campoObj.tabela.tabela}>
-                                    {campoObj.tabela.nome}
-                                </option>
-                            ))}
+                            <option value="" disabled>Selecione Agregação</option>
+                            {campos
+                                .filter(
+                                    (campoObj, i, arr) =>
+                                        arr.findIndex(
+                                            (c) => c.tabela.tabela === campoObj.tabela.tabela
+                                        ) === i
+                                )
+                                .map((campoObj, i) => (
+                                    <option key={i} value={campoObj.tabela.tabela}>
+                                        {campoObj.tabela.nome}
+                                    </option>
+                                ))}
                         </select>
                     </td>
                     <td className="table-form">
@@ -690,7 +668,7 @@ function SelectAgregation({ campos, agregacoes, setAgregacoes}){
 )
 }
 
-export default function Formulario({openTableReport}: IControl) {
+export default function Formulario({openTableReport, openGraphReport}: IControl) {
     const [tabelas, setTabelas] = useState<ITabela[]>(Tabelas);
     const [tabelasSelecionadas, setTabelasSelecionadas] = useState<ITabela[]>([]);
     const [camposTabela, setCamposTabela] = useState<ICampo[]>([]);
@@ -747,7 +725,7 @@ export default function Formulario({openTableReport}: IControl) {
             orderBy: ordering.map(campo => { return { nome: campo.campo.nome, tabela: campo.tabela.tabela, ordem: campo.ordem }}),
             agregacoes: agregacoes.map(agregacao => { return { tipo: agregacao.operacao, alias: agregacao.alias, coluna: { nome: agregacao.campo.campo.nome, tabela: agregacao.campo.tabela.tabela as TabelaID} } })
         };
-
+        console.log(formData);
         setQueryPayload(formData);
         openTableReport();
     }
@@ -755,7 +733,30 @@ export default function Formulario({openTableReport}: IControl) {
 
     
     function getCamposTabela(){}
-    function handleReportGraphic(){}
+    function handleReportGraphic(){
+        
+        const formData: QueryArguments = {
+            tabelas: tabelasSelecionadas.map(tabela => tabela.tabela),
+            colunas: camposSelecionados.map(campo => { return { nome: campo.campo.nome, tabela: campo.tabela.tabela as TabelaID }}),
+            filtros: filtros.map(filtro => { 
+                return { 
+                        tabela: filtro.tabela.tabela as TabelaID,
+                        coluna: { 
+                            nome: filtro.campo.campo.nome, 
+                            tabela: filtro.tabela.tabela as TabelaID
+                        },  
+                        operador: filtro.operacao,
+                        valor: filtro.valor
+                    } 
+                }),
+            groupBy: camposAgrupados.map(campo => { return { nome: campo.campo.nome, tabela: campo.tabela.tabela as TabelaID}}),
+            orderBy: ordering.map(campo => { return { nome: campo.campo.nome, tabela: campo.tabela.tabela, ordem: campo.ordem }}),
+            agregacoes: agregacoes.map(agregacao => { return { tipo: agregacao.operacao, alias: agregacao.alias, coluna: { nome: agregacao.campo.campo.nome, tabela: agregacao.campo.tabela.tabela as TabelaID} } })
+        };
+        console.log("formData",formData);
+        setQueryPayload(formData);
+        openGraphReport();
+    }
     function handleReset(){}
 
     return (

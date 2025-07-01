@@ -16,6 +16,7 @@ const TableReport = ({onClose}: IControl) => {
     const [reportData, setReportData] = useState<QueryReturn>();
     const [rows, setRows] = useState<any[]>([]);
     const [cols, setCols] = useState<any[]>([]);
+    const [error, setError] = useState<string | null>();
 
     // const { data, error, mutate } = useSwr<QueryReturn>("/api/backend", fetcher);
 
@@ -30,6 +31,14 @@ const TableReport = ({onClose}: IControl) => {
       },
       body: JSON.stringify(queryArguments),
     });
+    
+    if(!response.ok)
+    {
+      const data = await response.json();
+      setError(data.message);
+      return
+    }
+
     const result = await response.json();
     setReportData(result);
     console.log(result);
@@ -83,40 +92,45 @@ const TableReport = ({onClose}: IControl) => {
   return (
     <>
         <div className='fixed inset-0 w-full h-full bg-gray-600 opacity-60 flex justify-center items-center'/>
-        <div className=' fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
-          w-3/4 h-3/4 rounded-2xl bg-white shadow-2xl shadow-blue-400
-          flex flex-col gap-1'>
+        <div className={`fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
+          w-3/4 h-3/4 rounded-2xl bg-white shadow-2xl
+          flex flex-col gap-1 ${!error ? 'shadow-blue-400': 'shadow-red-400'}`}>
             <button className='absolute z-3 right-0 bg-black text-white rounded-full flex items-center justify-center px-1'
                     onClick={onClose}
             >
                 <span className='w-fit h-fit text-4xl leading-none -translate-y-1/6'>&times;</span>
             </button>
             
-            <div className='flex-1 overflow-auto px-0'>
-                <table className='min-w-full border-collapse'>
-                    <thead className='bg-gray-200 sticky top-0'>
-                        <tr className='rounded-t-3xl text-center'>
-                          {cols.map((column, index) => <th className="table-form" key={index}> {column} </th>)}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {rows.map((row, index) => (
-                          <tr key={index} className='bg-white rounded-2xl'>
-                            {Object.values(row).map((value, index) => <td className="table-form" key={index}>{value as string}</td>)}
+            {error? <div className='w-full h-full flex justify-center items-center'>
+              <h1 className='text-3xl text-red-600 text-center'>{error}</h1>
+            </div> : (<>
+                <div className='flex-1 overflow-auto px-0'>
+                  <table className='min-w-full border-collapse'>
+                      <thead className='bg-gray-200 sticky top-0'>
+                          <tr className='rounded-t-3xl text-center'>
+                            {cols.map((column, index) => <th className="table-form" key={index}> {column} </th>)}
                           </tr>
-                        ))}
-                    </tbody>
-                </table>
-                
-            </div>
-            <hr className="border-t border-gray-300" />
-            <div className='flex justify-end p-1'>
-                <button className='min-w-40 z-3 bg-black text-white rounded-full flex items-center justify-center px-1'
-                      onClick={handleDownloadCSV}
-              >
-                  <span className='w-fit h-fit text-xl leading-none p-3'>Gerar CSV</span>
-              </button>
-            </div>
+                      </thead>
+                      <tbody>
+                          {rows.map((row, index) => (
+                            <tr key={index} className='bg-white rounded-2xl'>
+                              {Object.values(row).map((value, index) => <td className="table-form" key={index}>{value as string}</td>)}
+                            </tr>
+                          ))}
+                      </tbody>
+                  </table>   
+              </div>
+
+              <hr className="border-t border-gray-300" />
+
+              <div className='flex justify-end p-1'>
+                  <button className='min-w-40 z-3 bg-black text-white rounded-full flex items-center justify-center px-1'
+                        onClick={handleDownloadCSV}
+                >
+                    <span className='w-fit h-fit text-xl leading-none p-3'>Gerar CSV</span>
+                </button>   
+              </div>
+            </>)}
         </div>
     </>
     
