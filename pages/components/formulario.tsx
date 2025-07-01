@@ -14,11 +14,11 @@ enum Operacao {
 }
 
 enum Agregacao {
-    Soma = "sum",
-    Contagem = "count",
-    Minimo = "min",
-    Maximo = "max",
-    Media = "avg"
+    Soma = "SUM",
+    Contagem = "COUNT",
+    Minimo = "MIN",
+    Maximo = "MAX",
+    Media = "AVG"
 }
 
 interface IFiltro {
@@ -526,7 +526,7 @@ function SelectAgregation({filtros, camposSelecionados, tabelas, agregacoes, set
                         >
                             <option value="" disabled>Selecione AAAAAAAAAAAAAAAAAAAAAAA</option>
                             {camposSelecionados.map((campoObj, i) => (
-                                <option key={i} value={campoObj.tabela.nome}>
+                                <option key={i} value={campoObj.tabela.tabela}>
                                     {campoObj.tabela.nome}
                                 </option>
                             ))}
@@ -562,7 +562,7 @@ function SelectAgregation({filtros, camposSelecionados, tabelas, agregacoes, set
                         </select>
                     </td>
                     <td className="table-form text-center">
-                        <SelectArray array={["sum", "count", "min", "max"]} 
+                        <SelectArray array={["SUM", "MIN", "MAX", "AVG", "COUNT"]} 
                             defaultValue={filtro.operacao} 
                             onChange={
                                 (e) => {
@@ -662,7 +662,7 @@ export default function Formulario({openTableReport}: IControl) {
                 }),
             groupBy: camposAgrupados.map(campo => { return { nome: campo.campo.nome, tabela: campo.tabela.tabela}}),
             orderBy: ordering.map(campo => { return { nome: campo.campo.nome, tabela: campo.tabela.tabela, ordem: campo.ordem }}),
-            agregacoes: agregacoes.map(agregacao => { return { tipo: agregacao.operacao, alias: agregacao.alias, coluna: { nome: agregacao.campo.campo.nome, tabela: agregacao.tabela.tabela} } })
+            agregacoes: agregacoes.map(agregacao => { return { tipo: agregacao.operacao, alias: agregacao.alias, coluna: { nome: agregacao.campo.campo.nome, tabela: agregacao.campo.tabela.tabela} } })
         };
 
         setQueryPayload(formData);

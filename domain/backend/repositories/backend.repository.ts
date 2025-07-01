@@ -83,7 +83,7 @@ export async function executeQuery(args : QueryArguments) {
 
     if (agregacoes) {
         agregacoes.forEach(agg => {
-            console.log(agg, agg.coluna, agg.coluna.nome)
+            console.log(agregacoesLista[agg.tipo], agg.tipo)
             const column = schema[agg.coluna.tabela][agg.coluna.nome];
             const alias = agg.alias || `${agg.tipo}_${agg.coluna.nome}`;
             querySelectArg = {...querySelectArg, [alias]:sql`${agregacoesLista[agg.tipo](column)} as ${sql.raw(alias)}`};
