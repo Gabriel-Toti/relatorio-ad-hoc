@@ -115,6 +115,7 @@ export async function executeQuery(args : QueryArguments) {
                 camelToSnake(juncao.tabelaPara) === camelToSnake(included)
             );
         });
+        includedTables.push(tabela);
         query = query.innerJoin(schema[tabela], 
             eq(schema[toCamelCase(juncaoInfo.tabelaDe)][toCamelCase(juncaoInfo.colunaDe)], 
                 schema[toCamelCase(juncaoInfo.tabelaPara)][toCamelCase(juncaoInfo.colunaPara)])

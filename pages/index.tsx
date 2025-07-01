@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Formulario  from "./components/formulario";
 import { QueryProvider } from "./components/query-provider";
@@ -16,3 +17,4 @@ export default function Index() {
     </div>
   );
 }
+
