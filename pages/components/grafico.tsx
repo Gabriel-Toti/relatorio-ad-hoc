@@ -207,113 +207,115 @@ export default function Grafico({ payload }: { payload: any }) {
         return () => chart.remove();
     }, [data,graphStructure]);
     return (
-    <div className='mx-full flex flex-col items-center justify-center'>
-        <div ref={headerRef}>
-        </div>
-        <div id='field-selector' className='flex flex-row items-center justify-center my-2'>
-            <div id='field-selector-x'>
-                X:
+    <div className='mx-full flex flex-row items-start justify-center'>
+        <div id='graph-container'>
+            <div ref={headerRef}/>
+            <div id='field-selector' className='flex flex-row items-center justify-center my-2'>
+                <div id='field-selector-x'>
+                    X:
+                    <select
+                        className="table-form mx-2"
+                        onChange={(e) => {
+                            if(graphStructure.y === undefined) {
+                                setGraphStructure({
+                                    ...graphStructure,
+                                    x: e.target.value,
+                                    y: jsonStructure.find((col) => col !== e.target.value) || ''
+                                });
+                            }
+                            else{
+                                setGraphStructure({
+                                    ...graphStructure,
+                                    x: e.target.value
+                                });
+                            }
+                        }}
+                        defaultValue={graphStructure?.x || jsonStructure[0] || ''}
+                    >
+                        {jsonStructure.map((tabela, index) => {return tabela !== graphStructure.y && (
+                            <option key={index} value={tabela}>
+                                {tabela}
+                            </option>
+                        )})}
+                    </select>
+                </div>
+            
+                <div id='field-selector-y'>
+                Y:
                 <select
                     className="table-form mx-2"
                     onChange={(e) => {
-                        if(graphStructure.y === undefined) {
-                            setGraphStructure({
-                                ...graphStructure,
-                                x: e.target.value,
-                                y: jsonStructure.find((col) => col !== e.target.value) || ''
-                            });
-                        }
-                        else{
-                            setGraphStructure({
-                                ...graphStructure,
-                                x: e.target.value
-                            });
-                        }
+                        setGraphStructure({
+                            ...graphStructure,
+                            y: e.target.value
+                        });
                     }}
-                    defaultValue={graphStructure?.x || jsonStructure[0] || ''}
+                        defaultValue={graphStructure?.y || jsonStructure[1] || ''}
                 >
-                    {jsonStructure.map((tabela, index) => {return tabela !== graphStructure.y && (
+
+                    {jsonStructure.map((tabela, index) => {return tabela !== graphStructure.x && (
                         <option key={index} value={tabela}>
                             {tabela}
                         </option>
                     )})}
                 </select>
-            </div>
-          
-            <div id='field-selector-y'>
-              Y:
-              <select
-                  className="table-form mx-2"
-                  onChange={(e) => {
-                      setGraphStructure({
-                          ...graphStructure,
-                          y: e.target.value
-                      });
-                  }}
-                    defaultValue={graphStructure?.y || jsonStructure[1] || ''}
-              >
+                </div>
 
-                  {jsonStructure.map((tabela, index) => {return tabela !== graphStructure.x && (
-                      <option key={index} value={tabela}>
-                          {tabela}
-                      </option>
-                  )})}
-              </select>
-            </div>
-
-            <button
-                className="table-form mx-2"
-                onClick={() => {
-                    setGraphStructure({
-                        ...graphStructure,
-                        x: graphStructure.y,
-                        y: graphStructure.x,
-                    });
-                }}
-            >
-                Trocar
-            </button>
-        </div>
-        <div id='field-sorter' className='flex flex-row items-center justify-center my-2'>
-            <div id='field-sorter-x' className='flex flex-row items-center justify-center'>
-                Ordernar Por:
-                <select
+                <button
                     className="table-form mx-2"
-                    onChange={(e) => {
+                    onClick={() => {
                         setGraphStructure({
                             ...graphStructure,
-                            sort: {
-                                ...graphStructure.sort,
-                                attr: e.target.value,
-                            }
+                            x: graphStructure.y,
+                            y: graphStructure.x,
                         });
                     }}
                 >
-                    <option key={0} value="x">
-                        X
-                    </option>
-                    <option key={1} value="y">
-                        Y
-                    </option>
-                </select>
+                    Trocar
+                </button>
             </div>
-            <div id='field-sorter-reverse' className='flex flex-row items-center justify-center'>
-                Inverter:
-                <input
-                    className="table-form mx-2"
-                    type="checkbox"
-                    onChange={(e) => {
-                        setGraphStructure({
-                            ...graphStructure,
-                            sort: {
-                                ...graphStructure.sort,
-                                reverse: e.target.checked,
-                            }
-                        });
-                    }}
-                />
+            <div id='field-sorter' className='flex flex-row items-center justify-center my-2'>
+                <div id='field-sorter-x' className='flex flex-row items-center justify-center'>
+                    Ordernar Por:
+                    <select
+                        className="table-form mx-2"
+                        onChange={(e) => {
+                            setGraphStructure({
+                                ...graphStructure,
+                                sort: {
+                                    ...graphStructure.sort,
+                                    attr: e.target.value,
+                                }
+                            });
+                        }}
+                    >
+                        <option key={0} value="x">
+                            X
+                        </option>
+                        <option key={1} value="y">
+                            Y
+                        </option>
+                    </select>
+                </div>
+                <div id='field-sorter-reverse' className='flex flex-row items-center justify-center'>
+                    Inverter:
+                    <input
+                        className="table-form mx-2"
+                        type="checkbox"
+                        onChange={(e) => {
+                            setGraphStructure({
+                                ...graphStructure,
+                                sort: {
+                                    ...graphStructure.sort,
+                                    reverse: e.target.checked,
+                                }
+                            });
+                        }}
+                    />
+                </div>
             </div>
         </div>
+        
 
 
         <table className='table-form'>
