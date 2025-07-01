@@ -1,5 +1,7 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {Tabelas, ITabela, IColuna} from '../../utils/tables';
+import { useQuery } from './query-provider';
+import { QueryArguments } from '../../domain/backend/repositories/backend.repository';
 //import axios from "axios";
 
 enum Operacao {
@@ -8,7 +10,7 @@ enum Operacao {
     Maior = ">",
     MaiorOuIgual = ">=",
     Diferente = "!=",
-    Igual = "=="
+    Igual = "="
 }
 
 enum Agregacao {
@@ -38,16 +40,29 @@ interface ICampo {
     campo: IColuna
 }
 
+interface IOrdem {
+    tabela: ITabela,
+    campo: IColuna,
+    ordem: 'asc' | 'desc'
+}
+
+interface IControl {
+    openTableReport: () => void;
+}
+
 const SelectArray = ({
     array,
     onChange,
-    defaultValue
+    defaultValue,
+    disabled
 }: {
     array: string[];
     onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
     defaultValue?: string;
+    disabled: boolean;
 }) => (
     <select
+        disabled = {disabled}
         className="border border-gray-300 rounded p-2 mx-5 min-w-1/4"
         defaultValue={defaultValue || array[0]}
         onChange={onChange}
@@ -161,7 +176,20 @@ function SelectCampos({campos, camposSelecionados, camposAgrupados, onChangeSele
             </table>
     );
 }
-function SelectOrderBy({campos}) {
+function SelectOrderBy({ campos, ordering, setOrdering }: { campos: ICampo[], ordering: IOrdem[], setOrdering: (campo: IOrdem[]) => void }) {
+
+    const onSelect = (campo: IOrdem) => {
+        setOrdering([
+            ...(ordering.filter(o =>
+                    {
+                        return o.campo.nome !== campo.campo.nome
+                 || o.tabela.tabela !== campo.tabela.tabela
+                    }
+                )),
+            campo
+        ])
+    }
+
     return (<table>
                 <thead className='bg-gray-200'>
                     <tr>
@@ -177,11 +205,11 @@ function SelectOrderBy({campos}) {
                             <td className="table-form">{campo.tabela.nome}</td>
                             <td className="table-form">{campo.campo.descricao}</td>
                             <td className="table-form">
-                                <input type="radio" name={`order`} value="Ascendente" /> 
+                                <input type="radio" name={`order-${index}`} value="Ascendente" onChange={() => { onSelect({ ...campo, ordem: 'asc' }) }}/> 
                                 <label> Ascencente</label>
                             </td>
                             <td className="table-form">
-                                <input type="radio" name={`order`} value="Descendente" /> 
+                                <input type="radio" name={`order-${index}`} value="Descendente" onChange={() => { onSelect({...campo, ordem: 'desc' }) }}/> 
                                 <label> Descendente</label>
                             </td>
                         </tr>
@@ -191,9 +219,10 @@ function SelectOrderBy({campos}) {
     )
 }
 
-function SelectFiltro({filtros, camposSelecionados, tabelas}){
+function SelectFiltro({filtros, setFiltros, camposSelecionados, tabelas}){
     const [buttonOn, setButtonOn] = useState<boolean[]>([]);
-    const [filtrosState, setFiltrosState] = useState<IFiltro[]>(filtros || []);
+    // const [filtrosState, setFiltrosState] = useState<IFiltro[]>(filtros || []);
+
 
     function novoFiltro() {
         const existeLinhaPendente = buttonOn.includes(false);
@@ -204,12 +233,12 @@ function SelectFiltro({filtros, camposSelecionados, tabelas}){
         const campo = camposSelecionados[0];
         const tabela = campo.tabela
 
-        setFiltrosState([
-            ...filtrosState,
+        setFiltros([
+            ...filtros,
             {
                 tabela: tabela,
-                campo: campo.campo,
-                operacao: Agregacao.Soma,
+                campo: campo,
+                operacao: Operacao.Igual,
                 valor: campo.campo
             }
         ]);
@@ -222,15 +251,21 @@ function SelectFiltro({filtros, camposSelecionados, tabelas}){
         //lógica de salvar os dados para usar na geração do relatório
         setButtonOn(prev => {
             const newState = [...prev];
+            console.log(newState);
             newState[index] = true;
             return newState;
         });
+
     }
+
+    useEffect(() => {
+        console.log(buttonOn)
+    }, [buttonOn]);
 
     function handleDeletarFiltro(idx)
     {
         //lógica de apagar os dados salvos para usar na geração do relatório
-        setFiltrosState(prev => prev.filter((_, i) => i !== idx));
+        setFiltros(prev => prev.filter((_, i) => i !== idx));
         setButtonOn(prev => prev.filter((_, i) => i !== idx));
     }
 
@@ -248,7 +283,7 @@ function SelectFiltro({filtros, camposSelecionados, tabelas}){
             </tr>
         </thead>
         <tbody>
-            {filtrosState.map((filtro, index) => (
+            {filtros.map((filtro, index) => (
                 <tr key={index}>
                     <td className="table-form">
                         <select
@@ -260,7 +295,7 @@ function SelectFiltro({filtros, camposSelecionados, tabelas}){
 
                                 if (!campoSelecionado) return;
 
-                                setFiltrosState(prev => {
+                                setFiltros(prev => {
                                     const novosFiltros = [...prev];
                                     novosFiltros[index] = {
                                         ...novosFiltros[index],
@@ -270,6 +305,7 @@ function SelectFiltro({filtros, camposSelecionados, tabelas}){
                                     return novosFiltros;
                                 });
                             }}
+                            disabled={buttonOn[index]}
                         >
                             <option value="" disabled>Selecione</option>
                             {camposSelecionados.map((campoObj, i) => (
@@ -289,16 +325,16 @@ function SelectFiltro({filtros, camposSelecionados, tabelas}){
 
                                 if (!campoSelecionado) return;
 
-                                setFiltrosState(prev => {
+                                setFiltros(prev => {
                                     const novosFiltros = [...prev];
                                     novosFiltros[index] = {
                                         ...novosFiltros[index],
-                                        campo: campoSelecionado.campo
+                                        campo: campoSelecionado
                                     };
                                     return novosFiltros;
                                 });
                             }}
-                            disabled={!filtro.tabela}
+                            disabled={!filtro.tabela || buttonOn[index]}
                         >
                             <option value="" disabled>Selecione</option>
                             {camposSelecionados.map((campoObj, i) => (
@@ -318,37 +354,62 @@ function SelectFiltro({filtros, camposSelecionados, tabelas}){
 
                                 if (!campoSelecionado) return;
 
-                                setFiltrosState(prev => {
+                                setFiltros(prev => {
                                     const novosFiltros = [...prev];
                                     novosFiltros[index] = {
                                         ...novosFiltros[index],
-                                        campo: campoSelecionado.campo
+                                        campo: campoSelecionado
                                     };
                                     return novosFiltros;
                                 });
                             }}
-                            disabled={!filtro.tabela}
+                            disabled={!filtro.tabela || buttonOn[index]}
                         >
                             <option value="" disabled>Selecione</option>
                             {camposSelecionados.map((campoObj, i) => (
-                                <option key={i} value={campoObj.campo.nome}>
+                                <option key={i} value={campoObj.campo.nome} disabled={buttonOn[index]}>
                                     {campoObj.campo.descricao}
                                 </option>
                             ))}
                         </select>
                     </td>
                     <td className="table-form text-center">
-                        <SelectArray array={["<", "<=", ">", ">=", "!=", "=="]} 
+                        <SelectArray array={["<", "<=", ">", ">=", "!=", "="]} 
                             defaultValue={filtro.operacao} 
                             onChange={
                                 (e) => {
                                     const novaOP = e.target.value;
+                                    console.log(novaOP)
+                                    const campoSelecionado = filtros[index];
+
+                                    if (!campoSelecionado) return;
+
+                                    setFiltros(prev => {
+                                        const novosFiltros = [...prev];
+                                        novosFiltros[index] = {
+                                            ...novosFiltros[index],
+                                            operacao: novaOP
+                                        };
+                                        return novosFiltros;
+                                    });
+                            
                                 }
                             }
+                             disabled={buttonOn[index]}
                         />
                         </td>
                     <td className="table-form w-max">
-                        <input className="table-form w-full"/>
+                        <input className="table-form w-full" onChange={(e) => {
+                            setFiltros(prev => {
+                                        const novosFiltros = [...prev];
+                                        novosFiltros[index] = {
+                                            ...novosFiltros[index],
+                                            valor: e.target.value
+                                        };
+                                        return novosFiltros;
+                                    });
+                        }}
+                        disabled={buttonOn[index]}/>
                     </td>
                     <td className="table-form">
                         {buttonOn[index] ? (
@@ -376,9 +437,8 @@ function SelectFiltro({filtros, camposSelecionados, tabelas}){
 )
 }
 
-function SelectAgregation({filtros, camposSelecionados, tabelas}){
+function SelectAgregation({filtros, camposSelecionados, tabelas, agregacoes, setAgregacoes}){
     const [buttonOn, setButtonOn] = useState<boolean[]>([]);
-    const [agregacoes, setAgregacoes] = useState<IAgregacao[]>(filtros || []);
 
     function novaAgregacao() {
         const existeLinhaPendente = buttonOn.includes(false);
@@ -393,8 +453,8 @@ function SelectAgregation({filtros, camposSelecionados, tabelas}){
             ...agregacoes,
             {
                 tabela: tabela,
-                campo: campo.campo,
-                operacao: Operacao.Igual,
+                campo: campo,
+                operacao: Agregacao.Soma,
                 alias: ""
             }
         ]);
@@ -418,6 +478,10 @@ function SelectAgregation({filtros, camposSelecionados, tabelas}){
         setAgregacoes(prev => prev.filter((_, i) => i !== idx));
         setButtonOn(prev => prev.filter((_, i) => i !== idx));
     }
+
+    useEffect(() => {
+        console.log(agregacoes)
+    }, [agregacoes])
 
     return(<table>
         <thead className='bg-gray-200'>
@@ -444,25 +508,25 @@ function SelectAgregation({filtros, camposSelecionados, tabelas}){
                             className="table-form w-full"
                             defaultValue={""}
                             onChange={(e) => {
-                                const nomeCampoSelecionado = e.target.value;
-                                const campoSelecionado = camposSelecionados.find(c => c.tabela.nome === nomeCampoSelecionado);
-
-                                if (!campoSelecionado) return;
+                                const tabelaSelecionada = e.target.value;
+                                console.log(tabelaSelecionada)
 
                                 setAgregacoes(prev => {
                                     const novosFiltros = [...prev];
                                     novosFiltros[index] = {
                                         ...novosFiltros[index],
-                                        tabela: campoSelecionado.tabela,
+                                        tabela: tabelaSelecionada,
                                         campo: undefined
                                     };
+
                                     return novosFiltros;
                                 });
                             }}
+                            disabled={buttonOn[index]}
                         >
-                            <option value="" disabled>Selecione</option>
+                            <option value="" disabled>Selecione AAAAAAAAAAAAAAAAAAAAAAA</option>
                             {camposSelecionados.map((campoObj, i) => (
-                                <option key={i} value={campoObj.campo.nome}>
+                                <option key={i} value={campoObj.tabela.nome}>
                                     {campoObj.tabela.nome}
                                 </option>
                             ))}
@@ -482,12 +546,12 @@ function SelectAgregation({filtros, camposSelecionados, tabelas}){
                                     const novosFiltros = [...prev];
                                     novosFiltros[index] = {
                                         ...novosFiltros[index],
-                                        campo: campoSelecionado.campo
+                                        campo: campoSelecionado
                                     };
                                     return novosFiltros;
                                 });
                             }}
-                            disabled={!filtro.tabela}
+                            disabled={!filtro.tabela || buttonOn[index]}
                         >
                             <option value="" disabled>Selecione</option>
                             {camposSelecionados.map((campoObj, i) => (
@@ -514,6 +578,7 @@ function SelectAgregation({filtros, camposSelecionados, tabelas}){
                                     });
                                 }
                             }
+                            disabled={buttonOn[index]}
                         />
                     </td>
                     <td className="table-form">
@@ -542,13 +607,17 @@ function SelectAgregation({filtros, camposSelecionados, tabelas}){
 )
 }
 
-export default function Formulario() {
+export default function Formulario({openTableReport}: IControl) {
     const [tabelas, setTabelas] = useState<ITabela[]>(Tabelas);
     const [tabelasSelecionadas, setTabelasSelecionadas] = useState<ITabela[]>([]);
     const [camposTabela, setCamposTabela] = useState<ICampo[]>([]);
     const [camposSelecionados, setCamposSelecionados] = useState<ICampo[]>([]);
     const [camposAgrupados, setCamposAgrupados] = useState<ICampo[]>([]);
     const [filtros, setFiltros] = useState<IFiltro[]>([]);
+    const [agregacoes, setAgregacoes] = useState<IAgregacao[]>([]);
+    const [ordering, setOrdering] = useState<IOrdem[]>([]);
+
+    const { queryPayload, setQueryPayload } = useQuery();
 
     function handleRemoveTabela(tabela: ITabela) {
         const tabelasSelecionadasCopy = tabelasSelecionadas.filter(t => t.nome !== tabela.nome);
@@ -576,16 +645,28 @@ export default function Formulario() {
     }
 
     function handleReport() {
-
-        const formData = {
-            tabela: tabelas[0].tabela,
-            tabelas: tabelas,
-            camposSelecionados: camposSelecionados,
-            filtros: filtros,
-            orderBy: camposAgrupados,
-            groupBy: camposAgrupados
+        console.log(agregacoes[0].campo.tabela.tabela);
+        const formData: QueryArguments = {
+            tabelas: tabelasSelecionadas.map(tabela => tabela.tabela),
+            colunas: camposSelecionados.map(campo => { return { nome: campo.campo.nome, tabela: campo.tabela.tabela}}),
+            filtros: filtros.map(filtro => { 
+                return { 
+                        tabela: filtro.tabela.tabela,
+                        coluna: { 
+                            nome: filtro.campo.campo.nome, 
+                            tabela: filtro.tabela.tabela 
+                        },  
+                        operador: filtro.operacao,
+                        valor: filtro.valor
+                    } 
+                }),
+            groupBy: camposAgrupados.map(campo => { return { nome: campo.campo.nome, tabela: campo.tabela.tabela}}),
+            orderBy: ordering.map(campo => { return { nome: campo.campo.nome, tabela: campo.tabela.tabela, ordem: campo.ordem }}),
+            agregacoes: agregacoes.map(agregacao => { return { tipo: agregacao.operacao, alias: agregacao.alias, coluna: { nome: agregacao.campo.campo.nome, tabela: agregacao.tabela.tabela} } })
         };
-        console.log("Form Data:", formData);
+
+        setQueryPayload(formData);
+        openTableReport();
     }
 
     function getCamposTabela(){}
@@ -655,42 +736,46 @@ export default function Formulario() {
             />
 
             <label>Ordernar por campo:</label>
-            <SelectOrderBy campos={camposSelecionados} />
+            <SelectOrderBy campos={camposSelecionados} ordering={ordering} setOrdering={setOrdering}/>
 
             <label>Filtros:</label>
-            <SelectFiltro filtros={filtros} camposSelecionados={camposSelecionados} tabelas={tabelas}/>
+            <SelectFiltro filtros={filtros} setFiltros={setFiltros} camposSelecionados={camposSelecionados} tabelas={tabelas}/>
 
             <label>Agregações:</label>
-            <SelectAgregation filtros={filtros} camposSelecionados={camposSelecionados} tabelas={tabelas}/>
+            <SelectAgregation filtros={filtros} camposSelecionados={camposSelecionados} tabelas={tabelas} agregacoes = {agregacoes} setAgregacoes = {setAgregacoes}/>
 
             <table className='gap-4 mx-auto flex'>
-                <td>
-                    <button
-                        type="button"
-                        className="table-form bg-black font-bold text-white w-1/1"
-                        onClick={() => handleReset()}
-                    >
-                        Limpar Formulário
-                    </button>
-                </td>
-                <td>
-                    <button
-                        type="button"
-                        className="table-form bg-black font-bold text-white w-1/1"
-                        onClick={() => handleReportGraphic()}
-                    >
-                        Gerar Gráfico
-                    </button>
-                </td>
-                <td>
-                    <button
-                        className="table-form bg-black font-bold text-white w-1/1"
-                        onClick={() => handleReport()}
-                        type='button'
-                    >
-                        Gerar Relatório
-                    </button>
-                </td>
+                <tbody>
+                    <tr>
+                        <td>
+                            <button
+                                type="button"
+                                className="table-form bg-black font-bold text-white w-1/1"
+                                onClick={() => handleReset()}
+                            >
+                                Limpar Formulário
+                            </button>
+                        </td>
+                        <td>
+                            <button
+                                type="button"
+                                className="table-form bg-black font-bold text-white w-1/1"
+                                onClick={() => handleReportGraphic()}
+                            >
+                                Gerar Gráfico
+                            </button>
+                        </td>
+                        <td>
+                            <button
+                                className="table-form bg-black font-bold text-white w-1/1"
+                                onClick={() => handleReport()}
+                                type='button'
+                            >
+                                Gerar Relatório
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
 
             </table>
         </form>
