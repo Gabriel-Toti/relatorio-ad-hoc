@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {Tabelas, ITabela, IColuna} from '../../utils/tables';
+import {Tabelas, TabelaID, ITabela, IColuna} from '../../utils/tables';
 import { useQuery } from './query-provider';
 import { QueryArguments } from '../../domain/backend/repositories/backend.repository';
 //import axios from "axios";
@@ -709,21 +709,21 @@ export default function Formulario({openTableReport}: IControl) {
         
         const formData: QueryArguments = {
             tabelas: tabelasSelecionadas.map(tabela => tabela.tabela),
-            colunas: camposSelecionados.map(campo => { return { nome: campo.campo.nome, tabela: campo.tabela.tabela}}),
+            colunas: camposSelecionados.map(campo => { return { nome: campo.campo.nome, tabela: campo.tabela.tabela as TabelaID }}),
             filtros: filtros.map(filtro => { 
                 return { 
-                        tabela: filtro.tabela.tabela,
+                        tabela: filtro.tabela.tabela as TabelaID,
                         coluna: { 
                             nome: filtro.campo.campo.nome, 
-                            tabela: filtro.tabela.tabela 
+                            tabela: filtro.tabela.tabela as TabelaID
                         },  
                         operador: filtro.operacao,
                         valor: filtro.valor
                     } 
                 }),
-            groupBy: camposAgrupados.map(campo => { return { nome: campo.campo.nome, tabela: campo.tabela.tabela}}),
+            groupBy: camposAgrupados.map(campo => { return { nome: campo.campo.nome, tabela: campo.tabela.tabela as TabelaID}}),
             orderBy: ordering.map(campo => { return { nome: campo.campo.nome, tabela: campo.tabela.tabela, ordem: campo.ordem }}),
-            agregacoes: agregacoes.map(agregacao => { return { tipo: agregacao.operacao, alias: agregacao.alias, coluna: { nome: agregacao.campo.campo.nome, tabela: agregacao.campo.tabela.tabela} } })
+            agregacoes: agregacoes.map(agregacao => { return { tipo: agregacao.operacao, alias: agregacao.alias, coluna: { nome: agregacao.campo.campo.nome, tabela: agregacao.campo.tabela.tabela as TabelaID} } })
         };
 
         setQueryPayload(formData);
