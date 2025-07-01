@@ -17,13 +17,17 @@ interface IControl {
 }
 
 export default function Grafico({onClose}: IControl) {
-    const headerRef = useRef<HTMLDivElement>(null);
+    const headerRef = useRef<HTMLDivElement>();
     const {queryPayload, setQueryPayload} = useQuery();
-    const [data, setData] = useState<QueryReturn>();
+    const [dataReport, setDataReport] = useState<QueryReturn>({
+            data: [],
+            message: "Carregando..."
+          });
     const [jsonStructure, setJsonStructure] = useState<string[]>([]);
-    const [graphStructure, setGraphStructure] = useState<IGraphData|undefined>();
+    const [graphStructure, setGraphStructure] = useState<IGraphData>();
 
     const sendQuery = async (queryArguments) => {
+
       if(!queryPayload) return;
 
       const response = await fetch("/api/backend", {
@@ -34,8 +38,18 @@ export default function Grafico({onClose}: IControl) {
         body: JSON.stringify(queryArguments),
       });
       const result = await response.json();
-      setData(result);
+      setDataReport(result);
+      console.log(result);
+      // mutate(result, false);
       setJsonStructure(Object.keys(result.data[0] || {}));
+      setGraphStructure({
+        x: Object.keys(result.data[0] || {})[0],
+        y: Object.keys(result.data[0] || {})[1], 
+        sort: {
+          attr: Object.keys(result.data[0] || {})[0],
+          reverse: false
+        }
+      });
       console.log(result);
       // mutate(result, false);
     };
@@ -47,14 +61,26 @@ export default function Grafico({onClose}: IControl) {
       }, [queryPayload]);
     
     useEffect(() => {
-        if(!data || !data.data) return;
-        console.log("Graph structure changed", graphStructure);
-        if (data === undefined || 
-            graphStructure === undefined || graphStructure.x === undefined || graphStructure.y === undefined ||
-            data.data[0] === undefined || headerRef.current === undefined) return;
-        const isXNumber = data.data[0][graphStructure.x] !== undefined && typeof data.data[0][graphStructure.x] === "number";
-        const isYNumber = data.data[0][graphStructure.y] !== undefined && typeof data.data[0][graphStructure.y] === "number";
-        const graphType = isXNumber && !isYNumber ? Plot.barX : Plot.barY;
+        console.log(dataReport)
+        if(!dataReport || !dataReport.data) return;
+        if(graphStructure === undefined) {
+            setGraphStructure({
+                x: Object.keys(dataReport.data[0] || {})[0],
+                y: Object.keys(dataReport.data[0] || {})[1], 
+                sort: {
+                    attr: Object.keys(dataReport.data[0] || {})[0],
+                    reverse: false
+                }
+            });
+        }
+
+        if (dataReport.data === undefined || 
+            dataReport.data[0] === undefined) return;
+          
+        const isXNumber = dataReport.data[0][graphStructure.x] !== undefined && !Number.isNaN(Number(dataReport.data[0][graphStructure.x]));
+        const isYNumber = dataReport.data[0][graphStructure.y] !== undefined && !Number.isNaN(Number(dataReport.data[0][graphStructure.y]));
+        console.log(isXNumber, isYNumber, graphStructure.x, graphStructure.y);
+        const graphType = isXNumber && !isYNumber ? Plot.barX : isXNumber && isYNumber ? Plot.barX :Plot.barY;
         const chart = Plot.plot({
             margin: 100,
             marginTop: 20,
@@ -74,12 +100,12 @@ export default function Grafico({onClose}: IControl) {
                 scheme: "burd"
             },
             marks: [
-                graphType(data.data, {
+                graphType(dataReport.data, {
                         x: graphStructure.x, 
                         y: graphStructure.y, 
                         sort: {
-                            x: graphStructure.sort.attr,
-                            y: graphStructure.sort.attr,
+                            x:"x",
+                            y: "y",
                             reverse: graphStructure.sort.reverse
                         }
                     }),
@@ -87,7 +113,7 @@ export default function Grafico({onClose}: IControl) {
         });
         if(headerRef.current) headerRef.current.append(chart);
         return () => chart.remove();
-    }, [data,graphStructure]);
+    }, [dataReport,graphStructure]);
     return (
     <div className='mx-full flex flex-row items-start justify-center'>
       <button className='absolute z-3 right-0 bg-black text-white rounded-full flex items-center justify-center px-1'
@@ -101,7 +127,7 @@ export default function Grafico({onClose}: IControl) {
                     <select
                         className="table-form mx-2"
                         onChange={(e) => {
-                            if(graphStructure.y === undefined) {
+                            if(graphStructure?.y === undefined) {
                                 setGraphStructure({
                                     ...graphStructure,
                                     x: e.target.value,
@@ -117,7 +143,7 @@ export default function Grafico({onClose}: IControl) {
                         }}
                         defaultValue={graphStructure?.x || jsonStructure[0] || ''}
                     >
-                        {jsonStructure.map((tabela, index) => {return tabela !== graphStructure.y && (
+                        {jsonStructure.map((tabela, index) => {return tabela !== graphStructure?.y && (
                             <option key={index} value={tabela}>
                                 {tabela}
                             </option>
@@ -130,15 +156,24 @@ export default function Grafico({onClose}: IControl) {
                 <select
                     className="table-form mx-2"
                     onChange={(e) => {
-                        setGraphStructure({
-                            ...graphStructure,
-                            y: e.target.value
-                        });
+                            if(graphStructure?.x === undefined) {
+                                setGraphStructure({
+                                    ...graphStructure,
+                                    y: e.target.value,
+                                    x: jsonStructure.find((col) => col !== e.target.value) || ''
+                                });
+                            }
+                            else{
+                                setGraphStructure({
+                                    ...graphStructure,
+                                    y: e.target.value
+                                });
+                            }
                     }}
                         defaultValue={graphStructure?.y || jsonStructure[1] || ''}
                 >
 
-                    {jsonStructure.map((tabela, index) => {return tabela !== graphStructure.x && (
+                    {jsonStructure.map((tabela, index) => {return tabela !== graphStructure?.x && (
                         <option key={index} value={tabela}>
                             {tabela}
                         </option>
@@ -212,7 +247,7 @@ export default function Grafico({onClose}: IControl) {
                 </tr>
             </thead>
             <tbody>
-                {data.data.map((row, index) => (
+                {dataReport.data.map((row, index) => (
                     <tr key={index}>
                         {jsonStructure.map((coluna, colIndex) => (
                             <td className='table-form' key={colIndex}>{row[coluna]}</td>
