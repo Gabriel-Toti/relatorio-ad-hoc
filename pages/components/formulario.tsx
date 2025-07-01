@@ -48,6 +48,7 @@ interface IOrdem {
 
 interface IControl {
     openTableReport: () => void;
+    openGraphReport: () => void;
 }
 
 const SelectArray = ({
@@ -690,7 +691,7 @@ function SelectAgregation({ campos, agregacoes, setAgregacoes}){
 )
 }
 
-export default function Formulario({openTableReport}: IControl) {
+export default function Formulario({openTableReport, openGraphReport}: IControl) {
     const [tabelas, setTabelas] = useState<ITabela[]>(Tabelas);
     const [tabelasSelecionadas, setTabelasSelecionadas] = useState<ITabela[]>([]);
     const [camposTabela, setCamposTabela] = useState<ICampo[]>([]);
@@ -755,7 +756,30 @@ export default function Formulario({openTableReport}: IControl) {
 
     
     function getCamposTabela(){}
-    function handleReportGraphic(){}
+    function handleReportGraphic(){
+        
+        const formData: QueryArguments = {
+            tabelas: tabelasSelecionadas.map(tabela => tabela.tabela),
+            colunas: camposSelecionados.map(campo => { return { nome: campo.campo.nome, tabela: campo.tabela.tabela as TabelaID }}),
+            filtros: filtros.map(filtro => { 
+                return { 
+                        tabela: filtro.tabela.tabela as TabelaID,
+                        coluna: { 
+                            nome: filtro.campo.campo.nome, 
+                            tabela: filtro.tabela.tabela as TabelaID
+                        },  
+                        operador: filtro.operacao,
+                        valor: filtro.valor
+                    } 
+                }),
+            groupBy: camposAgrupados.map(campo => { return { nome: campo.campo.nome, tabela: campo.tabela.tabela as TabelaID}}),
+            orderBy: ordering.map(campo => { return { nome: campo.campo.nome, tabela: campo.tabela.tabela, ordem: campo.ordem }}),
+            agregacoes: agregacoes.map(agregacao => { return { tipo: agregacao.operacao, alias: agregacao.alias, coluna: { nome: agregacao.campo.campo.nome, tabela: agregacao.campo.tabela.tabela as TabelaID} } })
+        };
+
+        setQueryPayload(formData);
+        openGraphReport();
+    }
     function handleReset(){}
 
     return (
