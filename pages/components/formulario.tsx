@@ -358,7 +358,6 @@ function SelectFiltro({filtros, setFiltros, camposSelecionados, tabelas}){
             <tr>
                 <th className="table-form w-1/5">Tabela</th>
                 <th className="table-form w-1/5">Campo</th>
-                <th className="table-form w-1/5">Categoria</th>
                 <th className="table-form w-1/5">Operação</th>
                 <th className="table-form w-1/5">Valor</th>
                 <th className="table-form w-1/5">
@@ -428,37 +427,8 @@ function SelectFiltro({filtros, setFiltros, camposSelecionados, tabelas}){
                             ))}
                         </select>
                     </td>
-                    <td className="table-form">
-                        <select
-                            className="table-form w-full"
-                            defaultValue={""}
-                            onChange={(e) => {
-                                const nomeCampoSelecionado = e.target.value;
-                                const campoSelecionado = camposSelecionados.find(c => c.campo.nome === nomeCampoSelecionado);
-
-                                if (!campoSelecionado) return;
-
-                                setFiltros(prev => {
-                                    const novosFiltros = [...prev];
-                                    novosFiltros[index] = {
-                                        ...novosFiltros[index],
-                                        campo: campoSelecionado
-                                    };
-                                    return novosFiltros;
-                                });
-                            }}
-                            disabled={!filtro.tabela || buttonOn[index]}
-                        >
-                            <option value="" disabled>Selecione</option>
-                            {camposSelecionados.map((campoObj, i) => (
-                                <option key={i} value={campoObj.campo.nome} disabled={buttonOn[index]}>
-                                    {campoObj.campo.descricao}
-                                </option>
-                            ))}
-                        </select>
-                    </td>
                     <td className="table-form text-center">
-                        <SelectArray array={["<", "<=", ">", ">=", "!=", "="]} 
+                        <SelectArray array={["<", "<=", ">", ">=", "!=", "=", "LIKE"]} 
                             defaultValue={filtro.operacao} 
                             onChange={
                                 (e) => {
