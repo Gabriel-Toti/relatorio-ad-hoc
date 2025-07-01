@@ -154,12 +154,14 @@ export default function Grafico() {
         const graphType = isXNumber && !isYNumber ? Plot.barX : Plot.barY;
         const chart = Plot.plot({
             margin: 100,
+            marginTop: 20,
             style: {
                 background: "transparent",
             },
             x: {
                 grid: true,
                 tickRotate: -45,
+                label: graphStructure.x,
             },
             y: {
                 grid: true
@@ -197,11 +199,11 @@ export default function Grafico() {
                 });
             }}
         >
-            {structure.map((tabela, index) => (
+            {structure.map((tabela, index) => {return tabela !== graphStructure.y && (
                 <option key={index} value={tabela}>
                     {tabela}
                 </option>
-            ))}
+            )})}
         </select>
         Y:
         <select
@@ -214,12 +216,24 @@ export default function Grafico() {
             }}
         >
 
-            {structure.map((tabela, index) => (
+            {structure.map((tabela, index) => {return tabela !== graphStructure.x && (
                 <option key={index} value={tabela}>
                     {tabela}
                 </option>
-            ))}
+            )})}
         </select>
+        <button
+            className="table-form mx-2"
+            onClick={() => {
+                setGraphStructure({
+                    ...graphStructure,
+                    x: graphStructure.y,
+                    y: graphStructure.x,
+                });
+            }}
+        >
+            Trocar
+        </button>
         Ordernar Por:
         <select
             className="table-form mx-2"
@@ -233,7 +247,6 @@ export default function Grafico() {
                 });
             }}
         >
-            <option value="">Nenhum</option>
             <option key={0} value="x">
                 X
             </option>
