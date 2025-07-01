@@ -3,6 +3,7 @@ import type { Hello, QueryReturn } from "../interfaces";
 import { Tabelas } from "../utils/tables";
 import Formulario  from "./components/formulario";
 import useSwr from "swr";
+import Grafico from "./components/grafico";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -25,8 +26,7 @@ export default function Index() {
 
   return (
     <div>
-      <p className="flex text-3xl font-bold text-red-500 justify-center p-5">{data.message}</p>
-      <Formulario />
+      <Grafico></Grafico>
       <button
         onClick={() => {
           const queryArguments = {
