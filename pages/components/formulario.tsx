@@ -127,12 +127,49 @@ function SelectTabela({tabelas, tabelasSelecionadas, onChange, onRemove}) {
     </>);
 }
 
-function SelectCampos({campos, camposSelecionados, camposAgrupados, onChangeSelect, onChangeGroup}) {
-    campos.map(campo => {
-        if (!camposSelecionados.includes(campo)) {
-            console.log("n tem campo", campo);
-        } 
-    });
+function SelectCampos({campos, camposSelecionados, agregacoes, camposAgrupados, onChangeSelect, onChangeGroup, onChangeAgregacoes} : {campos: ICampo[], camposSelecionados: ICampo[], agregacoes: IAgregacao[], camposAgrupados: ICampo[], onChangeSelect: (campo: ICampo, event: any) => void, onChangeGroup: (campo: ICampo, event: any) => void, onChangeAgregacoes: () => void}) {
+    const [locked, setLocked] = useState<boolean[]>(campos.map(_ => false));
+    
+    useEffect(() => {
+        onChangeAgregacoes();
+        const selecionados = new Set(camposSelecionados);
+        setLocked(prev => {
+            
+            for(let i = 0; i < campos.length; i++)
+            {
+                let campo = campos[i];
+                if(selecionados.has(campo))
+                {
+                    prev[i] = true;
+                }
+            }
+
+            return prev
+        });
+    }, [agregacoes]);
+
+    useEffect(() => {
+        if(agregacoes.length > 0)
+        {
+            onChangeAgregacoes();
+
+            const selecionados = new Set(camposSelecionados);
+            setLocked(prev => {
+                
+                for(let i = 0; i < campos.length; i++)
+                {
+                    let campo = campos[i];
+                    if(selecionados.has(campo))
+                    {
+                        prev[i] = true;
+                    }
+                }
+
+                return prev
+            });
+        }
+    }, [camposSelecionados])
+
     return (<table className={"table-form"}>
                 <thead className='bg-gray-200'>
                     <tr>
@@ -150,7 +187,19 @@ function SelectCampos({campos, camposSelecionados, camposAgrupados, onChangeSele
                             <td className="table-form">
                                 <input
                                     type="checkbox"
-                                    onChange={(e) => onChangeSelect(campo,e)}
+                                    onChange={(e) => {
+                                        onChangeSelect(campo, e);
+
+                                        if(!e.target.checked)
+                                        {
+                                            onChangeGroup(campo, e);
+                                            setLocked(prev => {
+                                                prev[index] = false
+                                                return prev
+                                            });
+                                        }
+
+                                    }}
                                     checked={camposSelecionados.some(
                                         (element) =>
                                             element.tabela.nome === campo.tabela.nome &&
@@ -161,12 +210,24 @@ function SelectCampos({campos, camposSelecionados, camposAgrupados, onChangeSele
                             <td className="table-form">
                                 <input
                                     type="checkbox"
-                                    onChange={(e) => onChangeGroup(campo,e)}
+                                    onChange={(e) => {
+                                        onChangeGroup(campo,e);
+                                        const invalid = !camposSelecionados.includes(campo) && e.target.checked;
+                                        if(invalid)
+                                        {
+                                            onChangeSelect(campo, e);
+                                            setLocked(prev => {
+                                                prev[index] = true
+                                                return prev
+                                            });
+                                        }
+                                    }}
                                     checked={camposAgrupados.some(
                                         (element) =>
                                             element.tabela.nome === campo.tabela.nome &&
                                             element.campo.nome === campo.campo.nome
                                     )}
+                                    disabled={locked[index]}
                                 />
                             </td>
                         </tr>
@@ -437,16 +498,16 @@ function SelectFiltro({filtros, setFiltros, camposSelecionados, tabelas}){
 )
 }
 
-function SelectAgregation({filtros, camposSelecionados, tabelas, agregacoes, setAgregacoes}){
+function SelectAgregation({ campos, agregacoes, setAgregacoes}){
     const [buttonOn, setButtonOn] = useState<boolean[]>([]);
 
     function novaAgregacao() {
         const existeLinhaPendente = buttonOn.includes(false);
 
-        if (existeLinhaPendente || camposSelecionados.length === 0) {
+        if (existeLinhaPendente || campos.length === 0) {
             return;
         }
-        const campo = camposSelecionados[0];
+        const campo = campos[0];
         const tabela = campo.tabela
 
         setAgregacoes([
@@ -525,7 +586,7 @@ function SelectAgregation({filtros, camposSelecionados, tabelas, agregacoes, set
                             disabled={buttonOn[index]}
                         >
                             <option value="" disabled>Selecione AAAAAAAAAAAAAAAAAAAAAAA</option>
-                            {camposSelecionados.map((campoObj, i) => (
+                            {campos.map((campoObj, i) => (
                                 <option key={i} value={campoObj.tabela.tabela}>
                                     {campoObj.tabela.nome}
                                 </option>
@@ -538,7 +599,7 @@ function SelectAgregation({filtros, camposSelecionados, tabelas, agregacoes, set
                             defaultValue={""}
                             onChange={(e) => {
                                 const nomeCampoSelecionado = e.target.value;
-                                const campoSelecionado = camposSelecionados.find(c => c.campo.nome === nomeCampoSelecionado);
+                                const campoSelecionado = campos.find(c => c.campo.nome === nomeCampoSelecionado);
 
                                 if (!campoSelecionado) return;
 
@@ -554,7 +615,7 @@ function SelectAgregation({filtros, camposSelecionados, tabelas, agregacoes, set
                             disabled={!filtro.tabela || buttonOn[index]}
                         >
                             <option value="" disabled>Selecione</option>
-                            {camposSelecionados.map((campoObj, i) => (
+                            {campos.map((campoObj, i) => (
                                 <option key={i} value={campoObj.campo.nome}>
                                     {campoObj.campo.descricao}
                                 </option>
@@ -645,7 +706,7 @@ export default function Formulario({openTableReport}: IControl) {
     }
 
     function handleReport() {
-        console.log(agregacoes[0].campo.tabela.tabela);
+        
         const formData: QueryArguments = {
             tabelas: tabelasSelecionadas.map(tabela => tabela.tabela),
             colunas: camposSelecionados.map(campo => { return { nome: campo.campo.nome, tabela: campo.tabela.tabela}}),
@@ -669,6 +730,8 @@ export default function Formulario({openTableReport}: IControl) {
         openTableReport();
     }
 
+
+    
     function getCamposTabela(){}
     function handleReportGraphic(){}
     function handleReset(){}
@@ -731,8 +794,20 @@ export default function Formulario({openTableReport}: IControl) {
                         );
                     }
                 }}
+                onChangeAgregacoes={
+                    () => {
+                        const agrupamentos = new Set(camposAgrupados);
+                        const camposInvalidos = camposSelecionados.filter(campo => !agrupamentos.has(campo));
+
+                        setCamposAgrupados([...camposAgrupados, ...camposInvalidos]);
+
+                        return camposInvalidos;
+        
+                    }
+                }   
                 camposSelecionados={camposSelecionados}
                 camposAgrupados={camposAgrupados}
+                agregacoes={agregacoes}
             />
 
             <label>Ordernar por campo:</label>
@@ -742,7 +817,7 @@ export default function Formulario({openTableReport}: IControl) {
             <SelectFiltro filtros={filtros} setFiltros={setFiltros} camposSelecionados={camposSelecionados} tabelas={tabelas}/>
 
             <label>Agregações:</label>
-            <SelectAgregation filtros={filtros} camposSelecionados={camposSelecionados} tabelas={tabelas} agregacoes = {agregacoes} setAgregacoes = {setAgregacoes}/>
+            <SelectAgregation campos={camposTabela} agregacoes = {agregacoes} setAgregacoes = {setAgregacoes}/>
 
             <table className='gap-4 mx-auto flex'>
                 <tbody>
