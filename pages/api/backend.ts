@@ -17,5 +17,6 @@ export default async function handler(
   } catch (error) {
     const err = handleError(error);
     res.status(err.status).json(err.error);
+    // throw error;
   }
 }
