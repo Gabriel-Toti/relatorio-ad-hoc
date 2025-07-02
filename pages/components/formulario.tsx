@@ -757,7 +757,7 @@ export default function Formulario({openTableReport, openGraphReport}: IControl)
         setQueryPayload(formData);
         openGraphReport();
     }
-    function handleReset(){}
+    function handleReset(){window.location.reload();}
 
     return (
         <div className='general'>
